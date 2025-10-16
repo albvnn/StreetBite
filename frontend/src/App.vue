@@ -1,23 +1,25 @@
 <template>
   <div id="app">
-    <header>
-      <h1>StreetBite</h1>
+    <header class="header-bar">
+      <div class="brand">
+        <h1>StreetBite <span class="emoji" aria-hidden="true">🍔</span></h1>
+      </div>
     </header>
 
     <main>
-      <!-- Espace réservé pour les futures cards -->
+      <!-- Reserved space for future cards -->
     </main>
 
     <footer>
       <nav class="footer-nav">
         <ul>
-          <li><a href="#">Accueil</a></li>
-          <li><a href="#">À propos</a></li>
+          <li><a href="#">Home</a></li>
+          <li><a href="#">About</a></li>
           <li><a href="#">Contact</a></li>
-          <li><a href="#">Mentions légales</a></li>
+          <li><a href="#">Legal notice</a></li>
         </ul>
       </nav>
-      <div class="footer-meta">© 2025 StreetBite — Tous droits réservés</div>
+      <div class="footer-meta">© 2025 StreetBite — All rights reserved</div>
     </footer>
   </div>
   
@@ -31,23 +33,33 @@ export default {
 
 <style>
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+  color: #111111;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-header {
-  text-align: center;
-  padding: 32px 16px 16px;
+.header-bar {
+  padding: 24px 16px 8px;
 }
 
-header h1 {
-  margin: 0;
+.brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
 }
+
+.brand h1 {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.emoji { font-size: 0.9em; }
 
 main {
   flex: 1;

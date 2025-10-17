@@ -1,104 +1,100 @@
 <template>
-  <div id="app">
-    <header class="header-bar">
-      <div class="brand">
-        <h1>StreetBite <span class="emoji" aria-hidden="true">🍔</span></h1>
+  <div class="container">
+    <div class="restaurants">
+      <div class="restaurant-card">
+        <img
+          src="https://images.unsplash.com/photo-1600891964599-f61ba0e24092"
+          alt="Restaurant"
+          class="restaurant-image"
+        />
+        <h2 class="restaurant-name">Le Soleil Gourmand</h2>
+        <p class="restaurant-description">
+          Un bistrot moderne proposant des plats faits maison inspirés de la cuisine méditerranéenne.
+        </p>
+        <div class="restaurant-rating">⭐ 4.5 / 5</div>
       </div>
-    </header>
 
-    <main>
-      <!-- Reserved space for future cards -->
-    </main>
+      <div class="restaurant-card">
+        <img
+          src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5"
+          alt="Restaurant"
+          class="restaurant-image"
+        />
+        <h2 class="restaurant-name">Street Délices</h2>
+        <p class="restaurant-description">
+          Une fusion entre les saveurs asiatiques et la street food parisienne. Une expérience unique !
+        </p>
+        <div class="restaurant-rating">⭐ 4.8 / 5</div>
+      </div>
 
-    <footer>
-      <nav class="footer-nav">
-        <ul>
-          <li><a href="#">Home</a></li>
-          <li><a href="#">About</a></li>
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">Legal notice</a></li>
-        </ul>
-      </nav>
-      <div class="footer-meta">© 2025 StreetBite — All rights reserved</div>
-    </footer>
+      <div class="restaurant-card">
+        <img
+          src="https://images.unsplash.com/photo-1601924638867-3ec2d9c3e7f3"
+          alt="Restaurant"
+          class="restaurant-image"
+        />
+        <h2 class="restaurant-name">Casa di Pasta</h2>
+        <p class="restaurant-description">
+          Spécialités italiennes servies dans une ambiance chaleureuse et conviviale. Les pâtes fraîches sont incontournables !
+        </p>
+        <div class="restaurant-rating">⭐ 4.7 / 5</div>
+      </div>
+    </div>
   </div>
-  
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
-</script>
-
-<style>
-#app {
-  font-family: 'Inter', Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #111111;
-  min-height: 100vh;
+<style scoped>
+.container {
   display: flex;
-  flex-direction: column;
-}
-
-.header-bar {
-  padding: 24px 16px 8px;
-}
-
-.brand {
-  display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
+  height: 100vh;
+  background-color: #fafafa;
 }
 
-.brand h1 {
-  margin: 0;
-  font-weight: 700;
-  letter-spacing: 0.2px;
-}
-
-.emoji { font-size: 0.9em; }
-
-main {
-  flex: 1;
+.restaurants {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px 16px;
-}
-
-footer {
-  margin-top: auto;
-  padding: 16px;
-  border-top: 1px solid #e5e7eb;
-  background: #fafafa;
-}
-
-.footer-nav ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  gap: 16px;
-  justify-content: center;
+  gap: 30px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-.footer-nav a {
-  text-decoration: none;
-  color: #374151;
-}
-
-.footer-nav a:hover {
-  color: #111827;
-}
-
-.footer-meta {
+.restaurant-card {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  width: 300px;
   text-align: center;
-  margin-top: 8px;
-  font-size: 12px;
-  color: #6b7280;
+  padding: 20px;
+  transition: transform 0.3s ease;
+}
+
+.restaurant-card:hover {
+  transform: translateY(-5px);
+}
+
+.restaurant-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+
+.restaurant-name {
+  margin-top: 15px;
+  font-size: 1.4em;
+  color: #333;
+}
+
+.restaurant-description {
+  margin: 10px 0;
+  color: #666;
+  font-size: 0.95em;
+}
+
+.restaurant-rating {
+  font-weight: bold;
+  color: #ff9800;
+  font-size: 1.1em;
 }
 </style>

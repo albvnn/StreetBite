@@ -71,7 +71,9 @@ export default {
 }
 
 .page-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 2em;
+  font-weight: 700;
   color: #333;
   margin-bottom: 20px;
   text-align: center;
@@ -91,13 +93,14 @@ export default {
 }
 
 .data-table thead {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff9800 100%);
+  background-color: #ff9800;
   color: white;
 }
 
 .data-table th {
   padding: 15px 12px;
   text-align: left;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.85em;
@@ -116,6 +119,7 @@ export default {
 .data-table td {
   padding: 12px;
   color: #555;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .category-badge {
@@ -123,9 +127,10 @@ export default {
   padding: 4px 10px;
   border-radius: 8px;
   font-size: 0.85em;
-  background-color: #f0f0f0;
-  color: #666;
-  font-weight: 500;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #fff3e0;
+  color: #ff9800;
+  font-weight: 600;
 }
 
 .status-badge {
@@ -133,6 +138,7 @@ export default {
   padding: 4px 12px;
   border-radius: 12px;
   font-size: 0.85em;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
 }
 

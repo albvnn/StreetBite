@@ -67,7 +67,9 @@ export default {
 }
 
 .page-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 2em;
+  font-weight: 700;
   color: #333;
   margin-bottom: 20px;
   text-align: center;
@@ -87,13 +89,14 @@ export default {
 }
 
 .data-table thead {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ff9800 100%);
+  background-color: #ff9800;
   color: white;
 }
 
 .data-table th {
   padding: 15px 12px;
   text-align: left;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.85em;
@@ -112,6 +115,7 @@ export default {
 .data-table td {
   padding: 12px;
   color: #555;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .role-badge {
@@ -130,7 +134,7 @@ export default {
 
 .role-badge.owner {
   background-color: #fff3e0;
-  color: #f57c00;
+  color: #ff9800;
 }
 </style>
 

@@ -2,36 +2,28 @@
   <div class="app">
     <header class="header">
       <h1 class="title">🌮 StreetBite</h1>
+      <nav class="navigation">
+        <div class="dropdown">
+          <button class="dropdown-toggle" @click="toggleDropdown">
+            {{ currentPageLabel }}
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div v-if="dropdownOpen" class="dropdown-menu">
+            <button 
+              v-for="page in pages" 
+              :key="page.value"
+              @click="selectPage(page.value)"
+              :class="['dropdown-item', { active: currentPage === page.value }]"
+            >
+              {{ page.label }}
+            </button>
+          </div>
+        </div>
+      </nav>
     </header>
 
     <div class="container">
-      <div class="search-container">
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="Search for a restaurant..."
-          class="search-bar"
-        />
-      </div>
-
-      <div class="restaurants">
-        <div v-for="restaurant in filteredRestaurants" :key="restaurant.id" class="restaurant-card">
-          <img
-            :src="restaurant.image"
-            :alt="restaurant.name"
-            class="restaurant-image"
-          />
-          <h2 class="restaurant-name">{{ restaurant.name }}</h2>
-          <p class="restaurant-description">
-            {{ restaurant.description }}
-          </p>
-          <div class="restaurant-rating">⭐ {{ restaurant.rating }} / 5</div>
-        </div>
-      </div>
-
-      <div v-if="filteredRestaurants.length === 0" class="no-results">
-        No restaurants found for "{{ searchQuery }}"
-      </div>
+      <component :is="currentComponent" />
     </div>
 
     <footer class="footer">
@@ -41,47 +33,58 @@
 </template>
 
 <script>
+import UsersTable from './components/UsersTable.vue';
+import FoodStandsTable from './components/FoodStandsTable.vue';
+import MenuItemsTable from './components/MenuItemsTable.vue';
+
 export default {
   name: 'App',
+  components: {
+    UsersTable,
+    FoodStandsTable,
+    MenuItemsTable
+  },
   data() {
     return {
-      searchQuery: '',
-      restaurants: [
-        {
-          id: 1,
-          name: 'Tokyo Street',
-          description: 'Freshly prepared sushi and rich ramen broth, served in an authentic Japanese vibe.',
-          rating: 4.9,
-          image: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500&h=400&fit=crop'
-        },
-        {
-          id: 2,
-          name: 'El Taco Loco',
-          description: 'Homemade tacos, quesadillas, and nachos! The perfect spot to enjoy bold Mexican street food flavors.',
-          rating: 4.6,
-          image: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=500&h=400&fit=crop'
-        },
-        {
-          id: 3,
-          name: 'Burger District',
-          description: 'Handcrafted burgers, crispy fries, and house sauces. A classic reimagined for real food lovers.',
-          rating: 4.4,
-          image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500&h=400&fit=crop'
-        }
+      currentPage: 'users',
+      dropdownOpen: false,
+      pages: [
+        { label: 'Users', value: 'users' },
+        { label: 'Food Stands', value: 'foodStands' },
+        { label: 'Menu Items', value: 'menuItems' }
       ]
     };
   },
   computed: {
-    filteredRestaurants() {
-      if (!this.searchQuery) {
-        return this.restaurants;
-      }
-      const query = this.searchQuery.toLowerCase();
-      return this.restaurants.filter(restaurant =>
-        restaurant.name.toLowerCase().includes(query) ||
-        restaurant.description.toLowerCase().includes(query)
-      );
+    currentComponent() {
+      const componentMap = {
+        users: 'UsersTable',
+        foodStands: 'FoodStandsTable',
+        menuItems: 'MenuItemsTable'
+      };
+      return componentMap[this.currentPage] || 'UsersTable';
+    },
+    currentPageLabel() {
+      const page = this.pages.find(p => p.value === this.currentPage);
+      return page ? page.label : 'Select Page';
     }
+  },
+  methods: {
+    toggleDropdown() {
+      this.dropdownOpen = !this.dropdownOpen;
+    },
+    selectPage(page) {
+      this.currentPage = page;
+      this.dropdownOpen = false;
+    }
+  },
+  mounted() {
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.dropdown')) {
+        this.dropdownOpen = false;
+      }
+    });
   }
 };
 </script>
@@ -105,6 +108,7 @@ export default {
   padding: 20px 0;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   text-align: center;
+  position: relative;
 }
 
 .title {
@@ -112,95 +116,98 @@ export default {
   font-size: 2.5em;
   font-weight: bold;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  margin-bottom: 15px;
+}
+
+.navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background-color: rgba(255, 255, 255, 0.95);
+  color: #333;
+  padding: 12px 24px;
+  font-size: 1em;
+  font-weight: 600;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 180px;
+  justify-content: center;
+}
+
+.dropdown-toggle:hover {
+  background-color: white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.dropdown-arrow {
+  font-size: 0.8em;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-toggle:hover .dropdown-arrow {
+  transform: translateY(2px);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  min-width: 180px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  display: block;
+  padding: 12px 20px;
+  color: #333;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-size: 0.95em;
+  font-family: inherit;
+}
+
+.dropdown-item:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-item.active {
+  background-color: #fff3e0;
+  color: #ff9800;
+  font-weight: 600;
 }
 
 .container {
   flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 40px 20px;
-  max-width: 1200px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.search-container {
-  width: 100%;
-  max-width: 600px;
-  margin-bottom: 40px;
-}
-
-.search-bar {
-  width: 100%;
-  padding: 15px 20px;
-  font-size: 1.1em;
-  border: 2px solid #e0e0e0;
-  border-radius: 50px;
-  outline: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.search-bar:focus {
-  border-color: #ff9800;
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
-}
-
-.restaurants {
-  display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 100%;
-}
-
-.restaurant-card {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  width: 300px;
-  text-align: center;
   padding: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.restaurant-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-.restaurant-image {
   width: 100%;
-  height: 180px;
-  object-fit: cover;
-  border-radius: 12px;
-}
-
-.restaurant-name {
-  margin-top: 15px;
-  font-size: 1.4em;
-  color: #333;
-}
-
-.restaurant-description {
-  margin: 10px 0;
-  color: #666;
-  font-size: 0.95em;
-  line-height: 1.5;
-}
-
-.restaurant-rating {
-  font-weight: bold;
-  color: #ff9800;
-  font-size: 1.1em;
-}
-
-.no-results {
-  text-align: center;
-  color: #999;
-  font-size: 1.2em;
-  padding: 40px;
+  overflow-y: auto;
 }
 
 .footer {

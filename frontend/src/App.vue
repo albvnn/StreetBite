@@ -1,8 +1,8 @@
 <template>
   <div class="app">
-    <AppHeader :current-page="currentPage" @home="goHome" @page-change="changePage" />
+    <AppHeader />
     <div class="container">
-      <component :is="currentComponent" />
+      <router-view />
     </div>
     <AppFooter />
   </div>
@@ -11,44 +11,12 @@
 <script>
 import AppHeader from './components/AppHeader.vue';
 import AppFooter from './components/AppFooter.vue';
-import HomePage from './components/HomePage.vue';
-import UsersTable from './components/UsersTable.vue';
-import FoodStandsTable from './components/FoodStandsTable.vue';
-import MenuItemsTable from './components/MenuItemsTable.vue';
 
 export default {
   name: 'App',
   components: {
     AppHeader,
-    AppFooter,
-    HomePage,
-    UsersTable,
-    FoodStandsTable,
-    MenuItemsTable
-  },
-  data() {
-    return {
-      currentPage: 'home'
-    };
-  },
-  computed: {
-    currentComponent() {
-      const componentMap = {
-        home: 'HomePage',
-        users: 'UsersTable',
-        foodStands: 'FoodStandsTable',
-        menuItems: 'MenuItemsTable'
-      };
-      return componentMap[this.currentPage] || 'HomePage';
-    }
-  },
-  methods: {
-    goHome() {
-      this.currentPage = 'home';
-    },
-    changePage(page) {
-      this.currentPage = page;
-    }
+    AppFooter
   }
 };
 </script>

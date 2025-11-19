@@ -1,175 +1,66 @@
 <template>
-  <div class="table-container">
-    <h2 class="page-title">Menu Items</h2>
-    <div class="table-wrapper">
-      <table class="data-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Stand ID</th>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Vegan</th>
-            <th>Available</th>
-            <th>Created At</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in menuItems" :key="item.item_id">
-            <td>{{ item.item_id }}</td>
-            <td>{{ item.stand_id }}</td>
-            <td><strong>{{ item.name }}</strong></td>
-            <td>{{ item.description }}</td>
-            <td class="price-cell">{{ formatPrice(item.price) }}</td>
-            <td>
-              <span :class="['vegan-badge', item.is_vegan ? 'vegan' : 'non-vegan']">
-                {{ item.is_vegan ? 'Yes' : 'No' }}
-              </span>
-            </td>
-            <td>
-              <span :class="['status-badge', item.available ? 'available' : 'unavailable']">
-                {{ item.available ? 'Yes' : 'No' }}
-              </span>
-            </td>
-            <td>{{ formatDate(item.created_at) }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+  <DataTable
+    :data="menuItems"
+    :columns="columns"
+    title="Menu Items"
+    row-key="item_id"
+  >
+    <template #cell-name="{ value }">
+      <strong>{{ value }}</strong>
+    </template>
+    <template #cell-price="{ value }">
+      <span class="price-cell">{{ formatPrice(value) }}</span>
+    </template>
+    <template #cell-is_vegan="{ value }">
+      <VeganBadge :is-vegan="value" />
+    </template>
+    <template #cell-available="{ value }">
+      <StatusBadge :is-active="value" active-text="Yes" inactive-text="No" />
+    </template>
+  </DataTable>
 </template>
 
 <script>
 import menuItemsData from '../data/menuItems.json';
+import { formatDate, formatPrice } from '../utils/formatters';
+import DataTable from './common/DataTable.vue';
+import StatusBadge from './common/StatusBadge.vue';
+import VeganBadge from './common/VeganBadge.vue';
 
 export default {
   name: 'MenuItemsTable',
+  components: {
+    DataTable,
+    StatusBadge,
+    VeganBadge
+  },
   data() {
     return {
-      menuItems: menuItemsData
+      menuItems: menuItemsData,
+      columns: [
+        { key: 'item_id', label: 'ID' },
+        { key: 'stand_id', label: 'Stand ID' },
+        { key: 'name', label: 'Name' },
+        { key: 'description', label: 'Description' },
+        { key: 'price', label: 'Price' },
+        { key: 'is_vegan', label: 'Vegan' },
+        { key: 'available', label: 'Available' },
+        { key: 'created_at', label: 'Created At', formatter: formatDate }
+      ]
     };
   },
   methods: {
-    formatDate(dateString) {
-      const date = new Date(dateString);
-      return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    },
-    formatPrice(price) {
-      return `€${price.toFixed(2)}`;
-    }
+    formatPrice
   }
 };
 </script>
 
 <style scoped>
-.table-container {
-  padding: 20px;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-.page-title {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 2em;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
-  text-align: center;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.95em;
-}
-
-.data-table thead {
-  background-color: #ff9800;
-  color: white;
-}
-
-.data-table th {
-  padding: 15px 12px;
-  text-align: left;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.85em;
-  letter-spacing: 0.5px;
-}
-
-.data-table tbody tr {
-  border-bottom: 1px solid #e0e0e0;
-  transition: background-color 0.2s;
-}
-
-.data-table tbody tr:hover {
-  background-color: #f5f5f5;
-}
-
-.data-table td {
-  padding: 12px;
-  color: #555;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
 .price-cell {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   color: #ff9800;
   font-size: 1.05em;
-}
-
-.vegan-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.85em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-}
-
-.vegan-badge.vegan {
-  background-color: #c8e6c9;
-  color: #2e7d32;
-}
-
-.vegan-badge.non-vegan {
-  background-color: #fff3e0;
-  color: #ff9800;
-}
-
-.status-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 0.85em;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-}
-
-.status-badge.available {
-  background-color: #c8e6c9;
-  color: #2e7d32;
-}
-
-.status-badge.unavailable {
-  background-color: #ffcdd2;
-  color: #c62828;
 }
 </style>
 

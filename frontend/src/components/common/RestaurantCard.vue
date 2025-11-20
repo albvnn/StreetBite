@@ -26,6 +26,11 @@
           </div>
         </div>
         <div class="restaurant-footer">
+          <div v-if="restaurant.averageRating > 0" class="rating-display">
+            <StarRating :rating="Math.round(restaurant.averageRating)" />
+            <span class="rating-text">{{ restaurant.averageRating.toFixed(1) }}</span>
+            <span class="review-count">({{ restaurant.reviewCount }})</span>
+          </div>
           <StatusBadge :is-active="restaurant.is_active" />
         </div>
       </div>
@@ -35,11 +40,13 @@
 
 <script>
 import StatusBadge from './StatusBadge.vue';
+import StarRating from './StarRating.vue';
 
 export default {
   name: 'RestaurantCard',
   components: {
-    StatusBadge
+    StatusBadge,
+    StarRating
   },
   props: {
     restaurant: {
@@ -125,8 +132,28 @@ export default {
 
 .restaurant-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-top: auto;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rating-text {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 1em;
+  color: #333;
+}
+
+.review-count {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.85em;
+  color: #666;
 }
 </style>
 

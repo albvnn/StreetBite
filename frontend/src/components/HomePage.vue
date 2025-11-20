@@ -35,16 +35,30 @@ export default {
     return {
       searchQuery: '',
       restaurants: [],
-      unsubscribeFn: null
+      reviews: [],
+      unsubscribeFn: null,
+      unsubscribeReviews: null
     };
   },
   computed: {
     filteredRestaurants() {
+      const restaurants = this.restaurants.map(restaurant => {
+        const standReviews = this.reviews.filter(r => r.stand_id === restaurant.stand_id);
+        const averageRating = standReviews.length > 0
+          ? standReviews.reduce((sum, r) => sum + r.rating, 0) / standReviews.length
+          : 0;
+        return {
+          ...restaurant,
+          averageRating: Math.round(averageRating * 10) / 10,
+          reviewCount: standReviews.length
+        };
+      });
+
       if (!this.searchQuery) {
-        return this.restaurants;
+        return restaurants;
       }
       const query = this.searchQuery.toLowerCase();
-      return this.restaurants.filter(restaurant =>
+      return restaurants.filter(restaurant =>
         restaurant.name.toLowerCase().includes(query) ||
         restaurant.description.toLowerCase().includes(query) ||
         restaurant.location.toLowerCase().includes(query) ||
@@ -54,18 +68,28 @@ export default {
   },
   created() {
     this.loadRestaurants();
+    this.loadReviews();
     this.unsubscribeFn = subscribeToEntity('foodStands', () => {
       this.loadRestaurants();
+    });
+    this.unsubscribeReviews = subscribeToEntity('reviews', () => {
+      this.loadReviews();
     });
   },
   beforeUnmount() {
     if (this.unsubscribeFn) {
       this.unsubscribeFn();
     }
+    if (this.unsubscribeReviews) {
+      this.unsubscribeReviews();
+    }
   },
   methods: {
     loadRestaurants() {
       this.restaurants = listEntities('foodStands').map(enrichRestaurantData);
+    },
+    loadReviews() {
+      this.reviews = listEntities('reviews');
     }
   }
 };

@@ -93,10 +93,11 @@
             <h2>Customer Reviews</h2>
             <button
               v-if="canReview"
-              class="primary-btn small"
+              class="review-btn"
               @click="showReviewForm = true"
             >
-              + Leave a Review
+              <span class="btn-icon">⭐</span>
+              <span>Leave a Review</span>
             </button>
           </div>
 
@@ -123,7 +124,10 @@
                 <textarea v-model="reviewForm.comment" rows="4" required></textarea>
               </label>
               <div class="form-actions full-width">
-                <button type="submit" class="primary-btn">Publish</button>
+                <button type="submit" class="publish-btn">
+                  <span class="btn-icon">📝</span>
+                  <span>Publish Review</span>
+                </button>
                 <button type="button" class="secondary-btn" @click="cancelReviewForm">Cancel</button>
               </div>
             </form>
@@ -451,9 +455,58 @@ export default {
   margin: 0;
 }
 
-.primary-btn.small {
-  padding: 8px 16px;
-  font-size: 0.9em;
+.review-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.review-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+  background: linear-gradient(135deg, #ff6f00 0%, #ff9800 100%);
+}
+
+.review-btn .btn-icon {
+  font-size: 1.1em;
+}
+
+.publish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.publish-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4);
+  background: linear-gradient(135deg, #388e3c 0%, #4caf50 100%);
+}
+
+.publish-btn .btn-icon {
+  font-size: 1.1em;
 }
 
 .menu-grid {

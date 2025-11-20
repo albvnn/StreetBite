@@ -1,34 +1,36 @@
 <template>
-  <div class="restaurant-card">
-    <img
-      :src="restaurant.image"
-      :alt="restaurant.name"
-      class="restaurant-image"
-    />
-    <div class="restaurant-content">
-      <h2 class="restaurant-name">{{ restaurant.name }}</h2>
-      <p class="restaurant-description">
-        {{ restaurant.description }}
-      </p>
-      <div class="restaurant-info">
-        <div class="info-item">
-          <span class="info-label">📍</span>
-          <span>{{ restaurant.location }}</span>
+  <router-link :to="`/restaurant/${restaurant.stand_id}`" class="restaurant-card-link">
+    <div class="restaurant-card">
+      <img
+        :src="restaurant.image"
+        :alt="restaurant.name"
+        class="restaurant-image"
+      />
+      <div class="restaurant-content">
+        <h2 class="restaurant-name">{{ restaurant.name }}</h2>
+        <p class="restaurant-description">
+          {{ restaurant.description }}
+        </p>
+        <div class="restaurant-info">
+          <div class="info-item">
+            <span class="info-label">📍</span>
+            <span>{{ restaurant.location }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🕐</span>
+            <span>{{ restaurant.opening_hours }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">🍽️</span>
+            <span>{{ restaurant.category }}</span>
+          </div>
         </div>
-        <div class="info-item">
-          <span class="info-label">🕐</span>
-          <span>{{ restaurant.opening_hours }}</span>
+        <div class="restaurant-footer">
+          <StatusBadge :is-active="restaurant.is_active" />
         </div>
-        <div class="info-item">
-          <span class="info-label">🍽️</span>
-          <span>{{ restaurant.category }}</span>
-        </div>
-      </div>
-      <div class="restaurant-footer">
-        <StatusBadge :is-active="restaurant.is_active" />
       </div>
     </div>
-  </div>
+  </router-link>
 </template>
 
 <script>
@@ -49,6 +51,12 @@ export default {
 </script>
 
 <style scoped>
+.restaurant-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
 .restaurant-card {
   background-color: white;
   border-radius: 12px;
@@ -57,6 +65,7 @@ export default {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
+  cursor: pointer;
 }
 
 .restaurant-card:hover {

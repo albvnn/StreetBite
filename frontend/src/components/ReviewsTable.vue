@@ -2,11 +2,11 @@
   <div class="crud-page">
     <div class="crud-header">
       <div>
-        <h2>Menu Items</h2>
-        <p class="subtitle">Manage menu entries for every street food stand.</p>
+        <h2>Reviews</h2>
+        <p class="subtitle">Track every customer review for stands and menu items.</p>
       </div>
       <button class="primary-btn" @click="openCreateForm">
-        + New Menu Item
+        + New Review
       </button>
     </div>
 
@@ -16,34 +16,31 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search items by name, stand or description..."
+            placeholder="Search reviews by user, stand, item or comment..."
           />
         </div>
 
         <DataTable
-          :data="filteredMenuItems"
+          :data="filteredReviews"
           :columns="columns"
           :title="''"
-          row-key="item_id"
+          row-key="review_id"
         >
-          <template #cell-name="{ value }">
+          <template #cell-userName="{ value }">
             <strong>{{ value }}</strong>
-          </template>
-          <template #cell-price="{ value }">
-            <span class="price-cell">{{ formatPrice(value) }}</span>
           </template>
           <template #cell-standName="{ value }">
             <span class="stand-pill">{{ value }}</span>
           </template>
-          <template #cell-is_vegan="{ value }">
-            <VeganBadge :is-vegan="value" />
+          <template #cell-itemName="{ value }">
+            <span>{{ value }}</span>
           </template>
-          <template #cell-available="{ value }">
-            <StatusBadge :is-active="value" active-text="Yes" inactive-text="No" />
+          <template #cell-rating="{ value }">
+            <StarRating :rating="value" />
           </template>
           <template #cell-actions="{ row }">
             <div class="table-actions">
-              <button class="link-btn" @click="selectItem(row)">Details</button>
+              <button class="link-btn" @click="selectReview(row)">Details</button>
               <button class="link-btn" @click="startEdit(row)">Edit</button>
               <button class="link-btn danger" @click="confirmDelete(row)">Delete</button>
             </div>
@@ -53,11 +50,11 @@
 
       <div class="side-panel">
         <div v-if="showForm" class="panel-card">
-          <h3>{{ formMode === 'create' ? 'Create Menu Item' : 'Edit Menu Item' }}</h3>
+          <h3>{{ formMode === 'create' ? 'Create Review' : 'Edit Review' }}</h3>
           <form class="form-grid" @submit.prevent="submitForm">
             <label>
               Stand
-              <select v-model.number="formData.stand_id" required>
+              <select v-model="formData.stand_id" required>
                 <option disabled value="">Select a stand</option>
                 <option v-for="stand in foodStands" :key="stand.stand_id" :value="stand.stand_id">
                   {{ stand.name }}
@@ -65,84 +62,82 @@
               </select>
             </label>
             <label>
-              Name
-              <input v-model="formData.name" type="text" required placeholder="Menu item name" />
-            </label>
-            <label class="full-width">
-              Description
-              <textarea
-                v-model="formData.description"
-                required
-                rows="3"
-                placeholder="What makes this dish special?"
-              ></textarea>
+              Menu Item
+              <select v-model="formData.item_id" required>
+                <option disabled value="">Select a menu item</option>
+                <option
+                  v-for="item in filteredItemsForStand"
+                  :key="item.item_id"
+                  :value="item.item_id"
+                >
+                  {{ item.name }}
+                </option>
+              </select>
             </label>
             <label>
-              Price (€)
-              <input
-                v-model.number="formData.price"
-                type="number"
-                min="0"
-                step="0.1"
+              User
+              <select v-model="formData.user_id" required>
+                <option disabled value="">Select a user</option>
+                <option v-for="user in users" :key="user.user_id" :value="user.user_id">
+                  {{ user.name }}
+                </option>
+              </select>
+            </label>
+            <label>
+              Rating
+              <select v-model.number="formData.rating" required>
+                <option v-for="rating in ratings" :key="rating" :value="rating">
+                  {{ rating }}
+                </option>
+              </select>
+            </label>
+            <label class="full-width">
+              Comment
+              <textarea
+                v-model="formData.comment"
+                rows="4"
+                placeholder="Share the customer feedback"
                 required
-              />
-            </label>
-            <label class="checkbox-field">
-              <input v-model="formData.is_vegan" type="checkbox" />
-              <span>Vegan option</span>
-            </label>
-            <label class="checkbox-field">
-              <input v-model="formData.available" type="checkbox" />
-              <span>Currently available</span>
+              ></textarea>
             </label>
             <div class="form-actions full-width">
               <button class="primary-btn" type="submit">
-                {{ formMode === 'create' ? 'Create Item' : 'Save Changes' }}
+                {{ formMode === 'create' ? 'Create Review' : 'Save Changes' }}
               </button>
               <button class="secondary-btn" type="button" @click="cancelForm">Cancel</button>
             </div>
           </form>
         </div>
 
-        <div v-else-if="selectedItem" class="panel-card">
+        <div v-else-if="selectedReview" class="panel-card">
           <div class="detail-header">
             <div>
-              <h3>{{ selectedItem.name }}</h3>
-              <p class="detail-location">{{ getStandName(selectedItem.stand_id) }}</p>
+              <h3>{{ getUserName(selectedReview.user_id) }}</h3>
+              <p class="detail-location">
+                {{ getStandName(selectedReview.stand_id) }} • {{ getItemName(selectedReview.item_id) }}
+              </p>
             </div>
-            <StatusBadge
-              :is-active="selectedItem.available"
-              active-text="Available"
-              inactive-text="Unavailable"
-            />
+            <StarRating :rating="selectedReview.rating" />
           </div>
-          <p class="item-description">{{ selectedItem.description }}</p>
+          <p class="review-comment">"{{ selectedReview.comment }}"</p>
           <div class="detail-grid">
             <div>
-              <span class="label">Price</span>
-              <p>{{ formatPrice(selectedItem.price) }}</p>
+              <span class="label">Submitted</span>
+              <p>{{ formatDate(selectedReview.created_at) }}</p>
             </div>
-            <div>
-              <span class="label">Vegan</span>
-              <p>{{ selectedItem.is_vegan ? 'Yes' : 'No' }}</p>
-            </div>
-            <div>
-              <span class="label">Created</span>
-              <p>{{ formatDate(selectedItem.created_at) }}</p>
-            </div>
-            <div v-if="selectedItem.updated_at">
+            <div v-if="selectedReview.updated_at">
               <span class="label">Updated</span>
-              <p>{{ formatDate(selectedItem.updated_at) }}</p>
+              <p>{{ formatDate(selectedReview.updated_at) }}</p>
             </div>
           </div>
           <div class="detail-actions">
-            <button class="secondary-btn" @click="startEdit(selectedItem)">Edit</button>
-            <button class="danger-btn" @click="confirmDelete(selectedItem)">Delete</button>
+            <button class="secondary-btn" @click="startEdit(selectedReview)">Edit</button>
+            <button class="danger-btn" @click="confirmDelete(selectedReview)">Delete</button>
           </div>
         </div>
 
         <div v-else class="panel-card empty-state">
-          <p>Select a menu item to see its details or create a new one.</p>
+          <p>Select a review to inspect it or create a new one.</p>
         </div>
       </div>
     </div>
@@ -154,7 +149,8 @@
 </template>
 
 <script>
-import { formatDate, formatPrice } from '../utils/formatters';
+import { formatDate } from '../utils/formatters';
+import usersData from '../data/users.json';
 import {
   listEntities,
   createEntity,
@@ -163,99 +159,126 @@ import {
   subscribeToEntity
 } from '../utils/fakeCrudService';
 import DataTable from './common/DataTable.vue';
-import StatusBadge from './common/StatusBadge.vue';
-import VeganBadge from './common/VeganBadge.vue';
+import StarRating from './common/StarRating.vue';
 
 export default {
-  name: 'MenuItemsTable',
+  name: 'ReviewsTable',
   components: {
     DataTable,
-    StatusBadge,
-    VeganBadge
+    StarRating
   },
   data() {
     return {
-      menuItems: [],
+      reviews: [],
       foodStands: [],
+      menuItems: [],
+      users: usersData,
       columns: [
-        { key: 'item_id', label: 'ID' },
-        { key: 'name', label: 'Name' },
+        { key: 'review_id', label: 'ID' },
+        { key: 'userName', label: 'User' },
         { key: 'standName', label: 'Stand' },
-        { key: 'description', label: 'Description' },
-        { key: 'price', label: 'Price' },
-        { key: 'is_vegan', label: 'Vegan' },
-        { key: 'available', label: 'Available' },
+        { key: 'itemName', label: 'Menu Item' },
+        { key: 'rating', label: 'Rating' },
+        { key: 'comment', label: 'Comment' },
         { key: 'created_at', label: 'Created At', formatter: formatDate },
         { key: 'actions', label: 'Actions' }
       ],
+      ratings: [5, 4, 3, 2, 1],
       searchQuery: '',
-      selectedItem: null,
+      selectedReview: null,
       showForm: false,
       formMode: 'create',
       formData: {
         stand_id: '',
-        name: '',
-        description: '',
-        price: 0,
-        is_vegan: false,
-        available: true
+        item_id: '',
+        user_id: usersData[0]?.user_id || '',
+        rating: 5,
+        comment: ''
       },
       statusMessage: '',
       statusTimeout: null,
-      unsubscribeMenu: null,
-      unsubscribeStands: null
+      unsubscribeReviews: null,
+      unsubscribeStands: null,
+      unsubscribeMenu: null
     };
   },
   computed: {
     tableRows() {
-      return this.menuItems.map(item => ({
-        ...item,
-        standName: this.getStandName(item.stand_id)
+      return this.reviews.map(review => ({
+        ...review,
+        standName: this.getStandName(review.stand_id),
+        itemName: this.getItemName(review.item_id),
+        userName: this.getUserName(review.user_id)
       }));
     },
-    filteredMenuItems() {
+    filteredReviews() {
       const query = this.searchQuery.trim().toLowerCase();
       const ordered = [...this.tableRows].sort((a, b) =>
-        a.name.localeCompare(b.name)
+        b.created_at.localeCompare(a.created_at)
       );
       if (!query) {
         return ordered;
       }
-      return ordered.filter(item => {
-        const haystack = `${item.name} ${item.description} ${item.standName}`.toLowerCase();
+      return ordered.filter(review => {
+        const haystack = `${review.userName} ${review.standName} ${review.itemName} ${review.comment}`.toLowerCase();
         return haystack.includes(query);
       });
+    },
+    filteredItemsForStand() {
+      if (!this.formData.stand_id) {
+        return [];
+      }
+      return this.menuItems.filter(item => item.stand_id === Number(this.formData.stand_id));
+    }
+  },
+  watch: {
+    'formData.stand_id'(newValue) {
+      if (!newValue) {
+        this.formData.item_id = '';
+        return;
+      }
+      const availableItems = this.menuItems.filter(item => item.stand_id === Number(newValue));
+      if (availableItems.length === 0) {
+        this.formData.item_id = '';
+        return;
+      }
+      const hasSelected = availableItems.some(item => item.item_id === Number(this.formData.item_id));
+      if (!hasSelected) {
+        this.formData.item_id = availableItems[0].item_id;
+      }
     }
   },
   created() {
-    this.refreshMenuItems();
+    this.refreshReviews();
     this.refreshFoodStands();
-    this.unsubscribeMenu = subscribeToEntity('menuItems', data => {
-      this.menuItems = data;
+    this.refreshMenuItems();
+    this.unsubscribeReviews = subscribeToEntity('reviews', data => {
+      this.reviews = data;
       this.syncSelection();
     });
     this.unsubscribeStands = subscribeToEntity('foodStands', data => {
       this.foodStands = data;
     });
+    this.unsubscribeMenu = subscribeToEntity('menuItems', data => {
+      this.menuItems = data;
+    });
   },
   beforeUnmount() {
-    if (this.unsubscribeMenu) {
-      this.unsubscribeMenu();
-    }
-    if (this.unsubscribeStands) {
-      this.unsubscribeStands();
-    }
+    [this.unsubscribeReviews, this.unsubscribeStands, this.unsubscribeMenu].forEach(unsub => {
+      if (typeof unsub === 'function') {
+        unsub();
+      }
+    });
     if (this.statusTimeout) {
       clearTimeout(this.statusTimeout);
     }
   },
   methods: {
     formatDate,
-    formatPrice,
-    refreshMenuItems() {
-      this.menuItems = listEntities('menuItems');
-      if (!this.selectedItem && this.menuItems.length) {
-        this.selectedItem = this.menuItems[0];
+    refreshReviews() {
+      this.reviews = listEntities('reviews');
+      if (!this.selectedReview && this.reviews.length) {
+        this.selectedReview = this.reviews[0];
       } else {
         this.syncSelection();
       }
@@ -263,45 +286,58 @@ export default {
     refreshFoodStands() {
       this.foodStands = listEntities('foodStands');
     },
+    refreshMenuItems() {
+      this.menuItems = listEntities('menuItems');
+    },
     syncSelection() {
-      if (!this.selectedItem) {
+      if (!this.selectedReview) {
         return;
       }
-      this.selectedItem =
-        this.menuItems.find(item => item.item_id === this.selectedItem.item_id) || null;
+      this.selectedReview =
+        this.reviews.find(review => review.review_id === this.selectedReview.review_id) || null;
     },
     getStandName(standId) {
       const stand = this.foodStands.find(entry => entry.stand_id === Number(standId));
       return stand ? stand.name : `Stand #${standId}`;
     },
+    getItemName(itemId) {
+      const item = this.menuItems.find(entry => entry.item_id === Number(itemId));
+      return item ? item.name : `Item #${itemId}`;
+    },
+    getUserName(userId) {
+      const user = this.users.find(entry => entry.user_id === Number(userId));
+      return user ? user.name : `User #${userId}`;
+    },
     openCreateForm() {
       this.formMode = 'create';
       this.formData = {
         stand_id: this.foodStands[0]?.stand_id || '',
-        name: '',
-        description: '',
-        price: 0,
-        is_vegan: false,
-        available: true
+        item_id: '',
+        user_id: this.users[0]?.user_id || '',
+        rating: 5,
+        comment: ''
       };
+      const items = this.filteredItemsForStand;
+      if (items.length) {
+        this.formData.item_id = items[0].item_id;
+      }
       this.showForm = true;
     },
-    selectItem(row) {
-      this.selectedItem =
-        this.menuItems.find(item => item.item_id === row.item_id) || row;
+    selectReview(row) {
+      this.selectedReview =
+        this.reviews.find(review => review.review_id === row.review_id) || row;
       this.showForm = false;
     },
-    startEdit(item) {
+    startEdit(review) {
       this.formMode = 'edit';
       this.formData = {
-        stand_id: item.stand_id,
-        name: item.name,
-        description: item.description,
-        price: item.price,
-        is_vegan: item.is_vegan,
-        available: item.available
+        stand_id: review.stand_id,
+        item_id: review.item_id,
+        user_id: review.user_id,
+        rating: review.rating,
+        comment: review.comment
       };
-      this.selectedItem = item;
+      this.selectedReview = review;
       this.showForm = true;
     },
     cancelForm() {
@@ -309,14 +345,14 @@ export default {
       this.formMode = 'create';
     },
     validateForm() {
-      const required = ['stand_id', 'name', 'description'];
+      const required = ['stand_id', 'item_id', 'user_id', 'comment'];
       const missing = required.some(field => !this.formData[field]);
       if (missing) {
         this.setStatusMessage('Please fill in all fields.');
         return false;
       }
-      if (this.formData.price < 0) {
-        this.setStatusMessage('Price must be positive.');
+      if (this.formData.rating < 1 || this.formData.rating > 5) {
+        this.setStatusMessage('Rating must be between 1 and 5.');
         return false;
       }
       return true;
@@ -324,11 +360,10 @@ export default {
     buildPayload() {
       return {
         stand_id: Number(this.formData.stand_id),
-        name: this.formData.name.trim(),
-        description: this.formData.description.trim(),
-        price: Number(this.formData.price),
-        is_vegan: Boolean(this.formData.is_vegan),
-        available: Boolean(this.formData.available)
+        item_id: Number(this.formData.item_id),
+        user_id: Number(this.formData.user_id),
+        rating: Number(this.formData.rating),
+        comment: this.formData.comment.trim()
       };
     },
     submitForm() {
@@ -338,42 +373,37 @@ export default {
       const payload = this.buildPayload();
       try {
         if (this.formMode === 'create') {
-          const created = createEntity('menuItems', payload);
-          this.selectedItem = created;
-          this.setStatusMessage(`"${created.name}" created successfully.`);
-        } else if (this.selectedItem) {
-          const updated = updateEntity('menuItems', this.selectedItem.item_id, payload);
-          this.selectedItem = updated;
-          this.setStatusMessage(`"${updated.name}" updated successfully.`);
+          const created = createEntity('reviews', payload);
+          this.selectedReview = created;
+          this.setStatusMessage('Review created successfully.');
+        } else if (this.selectedReview) {
+          const updated = updateEntity('reviews', this.selectedReview.review_id, payload);
+          this.selectedReview = updated;
+          this.setStatusMessage('Review updated successfully.');
         }
         this.showForm = false;
-        this.refreshMenuItems();
+        this.refreshReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
-    confirmDelete(item) {
-      const confirmed = window.confirm(`Delete "${item.name}" permanently?`);
+    confirmDelete(review) {
+      const confirmed = window.confirm('Delete this review permanently?');
       if (!confirmed) {
         return;
       }
       try {
-        deleteEntity('menuItems', item.item_id);
-        this.removeLinkedReviews(item.item_id);
-        if (this.selectedItem && this.selectedItem.item_id === item.item_id) {
-          this.selectedItem = null;
+        deleteEntity('reviews', review.review_id);
+        if (this.selectedReview && this.selectedReview.review_id === review.review_id) {
+          this.selectedReview = null;
         }
-        this.setStatusMessage(`"${item.name}" deleted.`);
-        this.refreshMenuItems();
+        this.setStatusMessage('Review deleted.');
+        this.refreshReviews();
       } catch (error) {
         console.error(error);
-        this.setStatusMessage('Failed to delete the menu item.');
+        this.setStatusMessage('Failed to delete the review.');
       }
-    },
-    removeLinkedReviews(itemId) {
-      const reviews = listEntities('reviews').filter(review => review.item_id === itemId);
-      reviews.forEach(review => deleteEntity('reviews', review.review_id));
     },
     setStatusMessage(message) {
       this.statusMessage = message;
@@ -473,13 +503,6 @@ export default {
   grid-column: 1 / -1;
 }
 
-.checkbox-field {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 600;
-}
-
 .form-actions {
   display: flex;
   gap: 12px;
@@ -537,13 +560,6 @@ export default {
   font-size: 0.85em;
 }
 
-.price-cell {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-  color: #ff9800;
-  font-size: 1.05em;
-}
-
 .detail-header {
   display: flex;
   justify-content: space-between;
@@ -556,10 +572,10 @@ export default {
   margin-top: 4px;
 }
 
-.item-description {
+.review-comment {
+  font-style: italic;
   color: #555;
   margin-bottom: 16px;
-  line-height: 1.5;
 }
 
 .detail-grid {

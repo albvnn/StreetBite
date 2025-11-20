@@ -20,8 +20,8 @@
 </template>
 
 <script>
-import foodStandsData from '../data/foodStands.json';
 import { enrichRestaurantData } from '../utils/restaurantData';
+import { listEntities, subscribeToEntity } from '../utils/fakeCrudService';
 import SearchBar from './common/SearchBar.vue';
 import RestaurantCard from './common/RestaurantCard.vue';
 
@@ -34,7 +34,8 @@ export default {
   data() {
     return {
       searchQuery: '',
-      restaurants: foodStandsData.map(enrichRestaurantData)
+      restaurants: [],
+      unsubscribeFn: null
     };
   },
   computed: {
@@ -49,6 +50,22 @@ export default {
         restaurant.location.toLowerCase().includes(query) ||
         restaurant.category.toLowerCase().includes(query)
       );
+    }
+  },
+  created() {
+    this.loadRestaurants();
+    this.unsubscribeFn = subscribeToEntity('foodStands', () => {
+      this.loadRestaurants();
+    });
+  },
+  beforeUnmount() {
+    if (this.unsubscribeFn) {
+      this.unsubscribeFn();
+    }
+  },
+  methods: {
+    loadRestaurants() {
+      this.restaurants = listEntities('foodStands').map(enrichRestaurantData);
     }
   }
 };

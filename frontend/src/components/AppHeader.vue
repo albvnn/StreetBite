@@ -1,26 +1,28 @@
 <template>
   <header class="header">
-    <div class="logo-container">
-      <router-link to="/" class="logo-link">
-        <span class="logo-icon">🌮</span>
-        <h1 class="logo-text">StreetBite</h1>
-      </router-link>
+    <div class="header-shell">
+      <div class="logo-container">
+        <router-link to="/" class="logo-link">
+          <span class="logo-icon">🌮</span>
+          <h1 class="logo-text">StreetBite</h1>
+        </router-link>
+      </div>
+      <nav class="navigation">
+        <router-link to="/" class="nav-button" :class="{ active: $route.name === 'home' }">
+          Home
+        </router-link>
+        <button v-if="currentUser" class="nav-button user-info" @click="showUserMenu = !showUserMenu">
+          👤 {{ currentUser.name }}
+          <span class="user-role">({{ currentUser.role === 'owner' ? 'Owner' : 'Customer' }})</span>
+        </button>
+        <button v-else class="nav-button" @click="showLogin = true">
+          Login
+        </button>
+        <button class="nav-button admin-btn" @click="openAdmin">
+          🔧 Admin
+        </button>
+      </nav>
     </div>
-    <nav class="navigation">
-      <router-link to="/" class="nav-button" :class="{ active: $route.name === 'home' }">
-        Home
-      </router-link>
-      <button v-if="currentUser" class="nav-button user-info" @click="showUserMenu = !showUserMenu">
-        👤 {{ currentUser.name }}
-        <span class="user-role">({{ currentUser.role === 'owner' ? 'Owner' : 'Customer' }})</span>
-      </button>
-      <button v-else class="nav-button" @click="showLogin = true">
-        Login
-      </button>
-      <button class="nav-button admin-btn" @click="openAdmin">
-        🔧 Admin
-      </button>
-    </nav>
     <div v-if="showUserMenu" class="user-menu">
       <button class="user-menu-item" @click="handleLogout">Logout</button>
     </div>
@@ -78,15 +80,24 @@ export default {
 
 <style scoped>
 .header {
-  background-color: #ffffff;
-  padding: 16px 32px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.85), rgba(248, 245, 239, 0.95));
+  padding: 18px 32px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.12);
   position: sticky;
   top: 0;
   z-index: 1000;
+  backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.header-shell {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 24px;
 }
 
 .logo-container {
@@ -110,18 +121,23 @@ export default {
 .navigation {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .nav-button {
-  background-color: #ff9800;
-  color: white;
-  padding: 10px 24px;
+  background: transparent;
+  color: #0f172a;
+  padding: 10px 20px;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 1em;
   font-weight: 600;
   border: none;
-  border-radius: 6px;
+  border-radius: 999px;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
@@ -131,13 +147,13 @@ export default {
 }
 
 .nav-button:hover {
-  background-color: #f57c00;
+  background: rgba(15, 23, 42, 0.08);
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
 }
 .nav-button.active {
-  background-color: #f57c00;
-  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.4);
+  background: #0f172a;
+  color: #fff;
+  box-shadow: 0 12px 25px rgba(15, 23, 42, 0.2);
 }
 
 .logo-link {
@@ -159,9 +175,9 @@ export default {
 
 .user-menu {
   position: absolute;
-  top: 100%;
-  right: 32px;
-  background: white;
+  top: calc(100% - 12px);
+  right: 40px;
+  background: rgba(255, 255, 255, 0.95);
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   margin-top: 8px;
@@ -188,11 +204,34 @@ export default {
 }
 
 .admin-btn {
-  background-color: #9c27b0 !important;
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #fff;
+  box-shadow: 0 12px 25px rgba(168, 85, 247, 0.35);
 }
 
 .admin-btn:hover {
-  background-color: #7b1fa2 !important;
+  background: linear-gradient(135deg, #9333ea, #db2777);
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 16px;
+  }
+
+  .header-shell {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .navigation {
+    flex-wrap: wrap;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .user-menu {
+    right: 16px;
+  }
 }
 </style>
 

@@ -1,37 +1,56 @@
 <template>
   <router-link :to="`/restaurant/${restaurant.stand_id}`" class="restaurant-card-link">
     <div class="restaurant-card">
-      <img
-        :src="restaurant.image"
-        :alt="restaurant.name"
-        class="restaurant-image"
-      />
+      <div class="card-media">
+        <img
+          :src="restaurant.image"
+          :alt="restaurant.name"
+          class="restaurant-image"
+        />
+        <div class="media-overlays">
+          <span class="category-chip">{{ restaurant.category }}</span>
+          <StatusBadge class="status-pill" :is-active="restaurant.is_active" />
+        </div>
+      </div>
       <div class="restaurant-content">
-        <h2 class="restaurant-name">{{ restaurant.name }}</h2>
+        <div class="card-header">
+          <div>
+            <p class="location-label">📍 {{ restaurant.location }}</p>
+            <h2 class="restaurant-name">{{ restaurant.name }}</h2>
+          </div>
+          <div v-if="restaurant.averageRating > 0" class="rating-display">
+            <StarRating :rating="Math.round(restaurant.averageRating)" />
+            <div class="rating-copy">
+              <span class="rating-text">{{ restaurant.averageRating.toFixed(1) }}</span>
+              <span class="review-count">({{ restaurant.reviewCount }})</span>
+            </div>
+          </div>
+        </div>
         <p class="restaurant-description">
           {{ restaurant.description }}
         </p>
-        <div class="restaurant-info">
-          <div class="info-item">
-            <span class="info-label">📍</span>
-            <span>{{ restaurant.location }}</span>
-          </div>
+        <div class="info-grid">
           <div class="info-item">
             <span class="info-label">🕐</span>
-            <span>{{ restaurant.opening_hours }}</span>
+            <div>
+              <p class="info-title">Hours</p>
+              <p class="info-value">{{ restaurant.opening_hours }}</p>
+            </div>
           </div>
           <div class="info-item">
             <span class="info-label">🍽️</span>
-            <span>{{ restaurant.category }}</span>
+            <div>
+              <p class="info-title">Category</p>
+              <p class="info-value">{{ restaurant.category }}</p>
+            </div>
           </div>
-        </div>
-        <div class="restaurant-footer">
-          <div v-if="restaurant.averageRating > 0" class="rating-display">
-            <StarRating :rating="Math.round(restaurant.averageRating)" />
-            <span class="rating-text">{{ restaurant.averageRating.toFixed(1) }}</span>
-            <span class="review-count">({{ restaurant.reviewCount }})</span>
+          <div class="info-item">
+            <span class="info-label">📍</span>
+            <div>
+              <p class="info-title">Location</p>
+              <p class="info-value">{{ restaurant.location }}</p>
+            </div>
           </div>
-          <StatusBadge :is-active="restaurant.is_active" />
         </div>
       </div>
     </div>
@@ -65,95 +84,166 @@ export default {
 }
 
 .restaurant-card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow: 0 25px 60px rgba(15, 23, 42, 0.1);
   overflow: hidden;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   display: flex;
   flex-direction: column;
   cursor: pointer;
+  border: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .restaurant-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 35px 80px rgba(15, 23, 42, 0.16);
+}
+
+.card-media {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
 }
 
 .restaurant-image {
   width: 100%;
-  height: 200px;
+  height: 100%;
   object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.restaurant-card:hover .restaurant-image {
+  transform: scale(1.08);
+}
+
+.media-overlays {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+}
+
+.category-chip {
+  background: rgba(255, 255, 255, 0.9);
+  color: #ff6b6b;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.85em;
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.status-pill {
+  pointer-events: all;
 }
 
 .restaurant-content {
-  padding: 20px;
-  flex: 1;
+  padding: 24px;
   display: flex;
   flex-direction: column;
+  gap: 18px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.location-label {
+  margin: 0;
+  font-size: 0.9em;
+  color: #94a3b8;
 }
 
 .restaurant-name {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 1.5em;
+  margin: 4px 0 0;
+  font-size: 1.6em;
   font-weight: 700;
-  color: #333;
-  margin: 0 0 12px 0;
+  color: #0f172a;
 }
 
 .restaurant-description {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #666;
-  font-size: 0.95em;
+  margin: 0;
+  color: #475569;
   line-height: 1.6;
-  margin: 0 0 16px 0;
-  flex: 1;
-}
-
-.restaurant-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.info-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 0.9em;
-  color: #555;
-}
-
-.info-label {
-  font-size: 1.1em;
-}
-
-.restaurant-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
+  font-size: 0.98em;
 }
 
 .rating-display {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: 999px;
+  padding: 6px 14px;
+}
+
+.rating-copy {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
 }
 
 .rating-text {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
-  font-size: 1em;
-  color: #333;
+  color: #0f172a;
 }
 
 .review-count {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #94a3b8;
   font-size: 0.85em;
-  color: #666;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(15, 23, 42, 0.05);
+}
+
+.info-label {
+  font-size: 1.3em;
+}
+
+.info-title {
+  margin: 0;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+}
+
+.info-value {
+  margin: 2px 0 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+@media (max-width: 640px) {
+  .card-header {
+    flex-direction: column;
+  }
+
+  .rating-display {
+    align-self: flex-start;
+  }
 }
 </style>
 

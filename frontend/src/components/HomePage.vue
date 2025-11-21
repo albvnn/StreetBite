@@ -101,6 +101,9 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  background: #f8f5ef;
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
 .restaurants {

@@ -1,20 +1,22 @@
 <template>
-  <div class="home-container">
-    <SearchBar
-      v-model="searchQuery"
-      placeholder="Search for a restaurant..."
-    />
-
-    <div class="restaurants">
-      <RestaurantCard
-        v-for="restaurant in filteredRestaurants"
-        :key="restaurant.stand_id"
-        :restaurant="restaurant"
+  <div class="home-page">
+    <div class="home-container">
+      <SearchBar
+        v-model="searchQuery"
+        placeholder="Search for a restaurant..."
       />
-    </div>
 
-    <div v-if="filteredRestaurants.length === 0" class="no-results">
-      No restaurants found for "{{ searchQuery }}"
+      <div class="restaurants">
+        <RestaurantCard
+          v-for="restaurant in filteredRestaurants"
+          :key="restaurant.stand_id"
+          :restaurant="restaurant"
+        />
+      </div>
+
+      <div v-if="filteredRestaurants.length === 0" class="no-results">
+        No restaurants found for "{{ searchQuery }}"
+      </div>
     </div>
   </div>
 </template>
@@ -96,14 +98,18 @@ export default {
 </script>
 
 <style scoped>
+.home-page {
+  min-height: 100vh;
+  width: 100%;
+  background: #f8f5ef;
+  padding: 40px 0;
+}
+
 .home-container {
   padding: 40px 20px;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  background: #f8f5ef;
-  border-radius: 24px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
 }
 
 .restaurants {

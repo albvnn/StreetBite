@@ -98,20 +98,28 @@ export default {
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding: 96px 16px 40px;
   z-index: 2000;
+  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .modal-content {
   background: white;
-  border-radius: 12px;
+  border-radius: 16px;
   padding: 0;
   max-width: 500px;
-  width: 90%;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-height: none;
+  box-shadow: 0 25px 80px rgba(15, 23, 42, 0.3);
+}
+
+@media (max-width: 480px) {
+  .modal-overlay {
+    padding-top: 72px;
+  }
 }
 
 .modal-header {

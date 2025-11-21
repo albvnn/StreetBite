@@ -1,33 +1,35 @@
 <template>
-  <header class="header">
-    <div class="header-shell">
-      <div class="logo-container">
-        <router-link to="/" class="logo-link">
-          <span class="logo-icon">🌮</span>
-          <h1 class="logo-text">StreetBite</h1>
-        </router-link>
+  <div class="app-header-wrapper">
+    <header class="header">
+      <div class="header-shell">
+        <div class="logo-container">
+          <router-link to="/" class="logo-link">
+            <span class="logo-icon">🌮</span>
+            <h1 class="logo-text">StreetBite</h1>
+          </router-link>
+        </div>
+        <nav class="navigation">
+          <router-link to="/" class="nav-button" :class="{ active: $route.name === 'home' }">
+            Home
+          </router-link>
+          <button v-if="currentUser" class="nav-button user-info" @click="showUserMenu = !showUserMenu">
+            👤 {{ currentUser.name }}
+            <span class="user-role">({{ currentUser.role === 'owner' ? 'Owner' : 'Customer' }})</span>
+          </button>
+          <button v-else class="nav-button" @click="showLogin = true">
+            Login
+          </button>
+          <button class="nav-button admin-btn" @click="openAdmin">
+            🔧 Admin
+          </button>
+        </nav>
       </div>
-      <nav class="navigation">
-        <router-link to="/" class="nav-button" :class="{ active: $route.name === 'home' }">
-          Home
-        </router-link>
-        <button v-if="currentUser" class="nav-button user-info" @click="showUserMenu = !showUserMenu">
-          👤 {{ currentUser.name }}
-          <span class="user-role">({{ currentUser.role === 'owner' ? 'Owner' : 'Customer' }})</span>
-        </button>
-        <button v-else class="nav-button" @click="showLogin = true">
-          Login
-        </button>
-        <button class="nav-button admin-btn" @click="openAdmin">
-          🔧 Admin
-        </button>
-      </nav>
-    </div>
-    <div v-if="showUserMenu" class="user-menu">
-      <button class="user-menu-item" @click="handleLogout">Logout</button>
-    </div>
+      <div v-if="showUserMenu" class="user-menu">
+        <button class="user-menu-item" @click="handleLogout">Logout</button>
+      </div>
+    </header>
     <LoginModal :show="showLogin" @close="showLogin = false" @success="handleLoginSuccess" />
-  </header>
+  </div>
 </template>
 
 <script>
@@ -79,6 +81,10 @@ export default {
 </script>
 
 <style scoped>
+.app-header-wrapper {
+  position: relative;
+}
+
 .header {
   background: linear-gradient(120deg, rgba(255, 255, 255, 0.85), rgba(248, 245, 239, 0.95));
   padding: 18px 32px;

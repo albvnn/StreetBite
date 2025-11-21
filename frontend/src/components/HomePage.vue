@@ -105,8 +105,10 @@ export default {
 
 .restaurants {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 40px 24px;
+  justify-content: center;
+  padding-top: 20px;
   width: 100%;
 }
 
@@ -120,7 +122,8 @@ export default {
 
 @media (max-width: 768px) {
   .restaurants {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
   }
 }
 </style>

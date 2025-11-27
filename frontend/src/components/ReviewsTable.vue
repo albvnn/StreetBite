@@ -190,7 +190,7 @@ export default {
       formData: {
         stand_id: '',
         item_id: '',
-        user_id: usersData[0]?.user_id || '',
+        user_id: '',
         rating: 5,
         comment: ''
       },
@@ -336,7 +336,7 @@ export default {
       this.formData = {
         stand_id: this.foodStands[0]?.stand_id || '',
         item_id: '',
-        user_id: this.users[0]?.user_id || '',
+        user_id: this.users && this.users.length > 0 ? this.users[0].user_id : '',
         rating: 5,
         comment: ''
       };

@@ -22,6 +22,7 @@ export async function loginByEmail(email) {
     const storage = getStorage();
     if (storage) {
       // Ne pas stocker le password_hash
+      // eslint-disable-next-line no-unused-vars
       const { password_hash, ...userWithoutPassword } = user;
       storage.setItem(STORAGE_KEY, JSON.stringify(userWithoutPassword));
     }

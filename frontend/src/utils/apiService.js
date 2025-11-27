@@ -3,6 +3,7 @@ const API_BASE_URL = process.env.VUE_APP_API_URL || 'http://localhost:5000/api';
 
 async function apiRequest(endpoint, options = {}) {
   const url = `${API_BASE_URL}${endpoint}`;
+  const method = options.method || 'GET';
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -11,34 +12,47 @@ async function apiRequest(endpoint, options = {}) {
     ...options
   };
 
+  let requestBody = null;
   if (config.body && typeof config.body === 'object') {
+    requestBody = config.body;
     config.body = JSON.stringify(config.body);
   }
 
+  // Log de la requête
+  console.log(`[API REQUEST] ${method} ${url}`, requestBody ? { body: requestBody } : '');
+
+  const startTime = Date.now();
+
   try {
     const response = await fetch(url, config);
+    const duration = Date.now() - startTime;
 
     if (!response.ok) {
       let errorMessage = `HTTP error! status: ${response.status}`;
       try {
         const errorData = await response.json();
         errorMessage = errorData.message || errorMessage;
+        console.error(`[API ERROR] ${method} ${url} - Status: ${response.status} - Duration: ${duration}ms`, errorData);
       } catch {
         // Si la réponse n'est pas du JSON, utiliser le message par défaut
+        console.error(`[API ERROR] ${method} ${url} - Status: ${response.status} - Duration: ${duration}ms`);
       }
       throw new Error(errorMessage);
     }
 
     // Pour les réponses 204 No Content, retourner null
     if (response.status === 204) {
+      console.log(`[API SUCCESS] ${method} ${url} - Status: 204 No Content - Duration: ${duration}ms`);
       return null;
     }
 
     // Pour les autres réponses, parser le JSON
     const data = await response.json();
+    console.log(`[API SUCCESS] ${method} ${url} - Status: ${response.status} - Duration: ${duration}ms`, data);
     return data;
   } catch (error) {
-    console.error('API request failed:', error);
+    const duration = Date.now() - startTime;
+    console.error(`[API FAILED] ${method} ${url} - Duration: ${duration}ms`, error);
     throw error;
   }
 }

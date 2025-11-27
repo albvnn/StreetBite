@@ -1,4 +1,4 @@
-import usersData from '../data/users.json';
+import { usersApi } from './apiService';
 
 const STORAGE_KEY = 'streetbite_current_user';
 const ADMIN_CODE = '1234';
@@ -10,38 +10,27 @@ function getStorage() {
   return window.localStorage;
 }
 
-function loadUsers() {
-  const storage = getStorage();
-  if (!storage) {
-    return usersData;
-  }
-  const stored = storage.getItem('streetbite_users');
-  if (stored) {
-    try {
-      return JSON.parse(stored);
-    } catch (error) {
-      console.warn('Failed to parse users from storage', error);
+export async function loginByEmail(email) {
+  try {
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await usersApi.getByEmail(normalizedEmail);
+    
+    if (!user) {
+      return { success: false, error: 'Email not found' };
     }
-  }
-  storage.setItem('streetbite_users', JSON.stringify(usersData));
-  return usersData;
-}
 
-export function loginByEmail(email) {
-  const users = loadUsers();
-  const normalizedEmail = email.trim().toLowerCase();
-  const user = users.find(u => u.email.toLowerCase() === normalizedEmail);
-  
-  if (!user) {
-    return { success: false, error: 'Email not found' };
-  }
+    const storage = getStorage();
+    if (storage) {
+      // Ne pas stocker le password_hash
+      const { password_hash, ...userWithoutPassword } = user;
+      storage.setItem(STORAGE_KEY, JSON.stringify(userWithoutPassword));
+    }
 
-  const storage = getStorage();
-  if (storage) {
-    storage.setItem(STORAGE_KEY, JSON.stringify(user));
+    return { success: true, user };
+  } catch (error) {
+    console.error('Login error:', error);
+    return { success: false, error: 'Failed to login. Please try again.' };
   }
-
-  return { success: true, user };
 }
 
 export function logout() {
@@ -118,8 +107,8 @@ function notifyAuthChange() {
   });
 }
 
-export function login(email) {
-  const result = loginByEmail(email);
+export async function login(email) {
+  const result = await loginByEmail(email);
   if (result.success) {
     notifyAuthChange();
   }
@@ -130,4 +119,3 @@ export function logoutAndNotify() {
   logout();
   notifyAuthChange();
 }
-

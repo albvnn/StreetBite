@@ -167,7 +167,7 @@ import {
   updateEntity,
   deleteEntity,
   subscribeToEntity
-} from '../utils/fakeCrudService';
+} from '../utils/apiService';
 import DataTable from './common/DataTable.vue';
 import StatusBadge from './common/StatusBadge.vue';
 import CategoryBadge from './common/CategoryBadge.vue';
@@ -225,9 +225,9 @@ export default {
       });
     }
   },
-  created() {
-    this.refreshFoodStands();
-    this.unsubscribeFn = subscribeToEntity('foodStands', data => {
+  async created() {
+    await this.refreshFoodStands();
+    this.unsubscribeFn = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;
       this.syncSelection();
     });
@@ -242,12 +242,17 @@ export default {
   },
   methods: {
     formatDate,
-    refreshFoodStands() {
-      this.foodStands = listEntities('foodStands');
-      if (!this.selectedStand && this.foodStands.length) {
-        this.selectedStand = this.foodStands[0];
-      } else {
-        this.syncSelection();
+    async refreshFoodStands() {
+      try {
+        this.foodStands = await listEntities('foodStands');
+        if (!this.selectedStand && this.foodStands.length) {
+          this.selectedStand = this.foodStands[0];
+        } else {
+          this.syncSelection();
+        }
+      } catch (error) {
+        console.error('Failed to load food stands', error);
+        this.foodStands = [];
       }
     },
     syncSelection() {
@@ -318,29 +323,29 @@ export default {
         is_active: Boolean(this.formData.is_active)
       };
     },
-    submitForm() {
+    async submitForm() {
       if (!this.validateForm()) {
         return;
       }
       const payload = this.buildPayload();
       try {
         if (this.formMode === 'create') {
-          const created = createEntity('foodStands', payload);
+          const created = await createEntity('foodStands', payload);
           this.selectedStand = created;
           this.setStatusMessage(`"${created.name}" created successfully.`);
         } else if (this.selectedStand) {
-          const updated = updateEntity('foodStands', this.selectedStand.stand_id, payload);
+          const updated = await updateEntity('foodStands', this.selectedStand.stand_id, payload);
           this.selectedStand = updated;
           this.setStatusMessage(`"${updated.name}" updated successfully.`);
         }
         this.showForm = false;
-        this.refreshFoodStands();
+        await this.refreshFoodStands();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
-    confirmDelete(stand) {
+    async confirmDelete(stand) {
       const confirmed = window.confirm(
         `Delete "${stand.name}"? This will also affect its menu items and reviews later.`
       );
@@ -348,23 +353,31 @@ export default {
         return;
       }
       try {
-        deleteEntity('foodStands', stand.stand_id);
-        this.removeLinkedRecords(stand.stand_id);
+        await deleteEntity('foodStands', stand.stand_id);
+        await this.removeLinkedRecords(stand.stand_id);
         if (this.selectedStand && this.selectedStand.stand_id === stand.stand_id) {
           this.selectedStand = null;
         }
         this.setStatusMessage(`"${stand.name}" deleted.`);
-        this.refreshFoodStands();
+        await this.refreshFoodStands();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the stand.');
       }
     },
-    removeLinkedRecords(standId) {
-      const menuItems = listEntities('menuItems').filter(item => item.stand_id === standId);
-      menuItems.forEach(item => deleteEntity('menuItems', item.item_id));
-      const reviews = listEntities('reviews').filter(review => review.stand_id === standId);
-      reviews.forEach(review => deleteEntity('reviews', review.review_id));
+    async removeLinkedRecords(standId) {
+      try {
+        const menuItems = (await listEntities('menuItems')).filter(item => item.stand_id === standId);
+        for (const item of menuItems) {
+          await deleteEntity('menuItems', item.item_id);
+        }
+        const reviews = (await listEntities('reviews')).filter(review => review.stand_id === standId);
+        for (const review of reviews) {
+          await deleteEntity('reviews', review.review_id);
+        }
+      } catch (error) {
+        console.error('Error removing linked records', error);
+      }
     },
     setStatusMessage(message) {
       this.statusMessage = message;

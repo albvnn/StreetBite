@@ -146,7 +146,7 @@
                 <StarRating :rating="review.rating" />
               </div>
               <p class="review-comment">{{ review.comment }}</p>
-              <p class="review-date">{{ formatDate(review.created_at) }}</p>
+              <p class="review-date">{{ formatDate(review.reviewed_at || review.created_at) }}</p>
             </div>
           </div>
         </section>
@@ -163,9 +163,8 @@
 <script>
 import { formatDate, formatPrice } from '../utils/formatters';
 import { getCurrentUser, isOwner } from '../utils/authService';
-import { listEntities, createEntity, updateEntity, deleteEntity } from '../utils/fakeCrudService';
+import { listEntities, createEntity, updateEntity, deleteEntity, getEntityById } from '../utils/apiService';
 import { enrichRestaurantData } from '../utils/restaurantData';
-import usersData from '../data/users.json';
 import CategoryBadge from './common/CategoryBadge.vue';
 import StatusBadge from './common/StatusBadge.vue';
 import VeganBadge from './common/VeganBadge.vue';
@@ -184,7 +183,7 @@ export default {
       stand: null,
       menuItems: [],
       reviews: [],
-      users: usersData,
+      users: [],
       showMenuForm: false,
       showReviewForm: false,
       editingMenuItem: null,
@@ -219,42 +218,65 @@ export default {
       return this.currentUser && this.currentUser.role === 'customer';
     }
   },
-  created() {
-    this.loadStand();
-    this.loadMenuItems();
-    this.loadReviews();
+  async created() {
+    await this.loadUsers();
+    await this.loadStand();
+    await this.loadMenuItems();
+    await this.loadReviews();
   },
   watch: {
-    '$route.params.id'() {
-      this.loadStand();
-      this.loadMenuItems();
-      this.loadReviews();
+    async '$route.params.id'() {
+      await this.loadStand();
+      await this.loadMenuItems();
+      await this.loadReviews();
     }
   },
   methods: {
     formatDate,
     formatPrice,
-    loadStand() {
-      const standId = Number(this.$route.params.id);
-      const stands = listEntities('foodStands');
-      const found = stands.find(s => s.stand_id === standId);
-      if (found) {
-        this.stand = enrichRestaurantData(found);
-      } else {
+    async loadUsers() {
+      try {
+        this.users = await listEntities('users');
+      } catch (error) {
+        console.error('Failed to load users', error);
+        this.users = [];
+      }
+    },
+    async loadStand() {
+      try {
+        const standId = Number(this.$route.params.id);
+        const stand = await getEntityById('foodStands', standId);
+        if (stand) {
+          this.stand = enrichRestaurantData(stand);
+        } else {
+          this.$router.push('/');
+        }
+      } catch (error) {
+        console.error('Failed to load stand', error);
         this.$router.push('/');
       }
     },
-    loadMenuItems() {
+    async loadMenuItems() {
       if (!this.stand) return;
-      const allItems = listEntities('menuItems');
-      this.menuItems = allItems.filter(item => item.stand_id === this.stand.stand_id);
+      try {
+        const allItems = await listEntities('menuItems');
+        this.menuItems = allItems.filter(item => item.stand_id === this.stand.stand_id);
+      } catch (error) {
+        console.error('Failed to load menu items', error);
+        this.menuItems = [];
+      }
     },
-    loadReviews() {
+    async loadReviews() {
       if (!this.stand) return;
-      const allReviews = listEntities('reviews');
-      this.reviews = allReviews
-        .filter(review => review.stand_id === this.stand.stand_id)
-        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      try {
+        const allReviews = await listEntities('reviews');
+        this.reviews = allReviews
+          .filter(review => review.stand_id === this.stand.stand_id)
+          .sort((a, b) => new Date(b.reviewed_at || b.created_at) - new Date(a.reviewed_at || a.created_at));
+      } catch (error) {
+        console.error('Failed to load reviews', error);
+        this.reviews = [];
+      }
     },
     editMenuItem(item) {
       this.editingMenuItem = item;
@@ -278,7 +300,7 @@ export default {
         available: true
       };
     },
-    saveMenuItem() {
+    async saveMenuItem() {
       if (!this.canManage) return;
       const payload = {
         stand_id: this.stand.stand_id,
@@ -290,29 +312,32 @@ export default {
       };
       try {
         if (this.editingMenuItem) {
-          updateEntity('menuItems', this.editingMenuItem.item_id, payload);
+          await updateEntity('menuItems', this.editingMenuItem.item_id, payload);
           this.setStatusMessage(`"${payload.name}" updated successfully.`);
         } else {
-          createEntity('menuItems', payload);
+          await createEntity('menuItems', payload);
           this.setStatusMessage(`"${payload.name}" added to menu.`);
         }
         this.cancelMenuForm();
-        this.loadMenuItems();
+        await this.loadMenuItems();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Error saving item.');
       }
     },
-    deleteMenuItem(item) {
+    async deleteMenuItem(item) {
       if (!this.canManage) return;
       if (!confirm(`Delete "${item.name}"?`)) return;
       try {
-        deleteEntity('menuItems', item.item_id);
-        const itemReviews = listEntities('reviews').filter(r => r.item_id === item.item_id);
-        itemReviews.forEach(r => deleteEntity('reviews', r.review_id));
+        await deleteEntity('menuItems', item.item_id);
+        const allReviews = await listEntities('reviews');
+        const itemReviews = allReviews.filter(r => r.item_id === item.item_id);
+        for (const review of itemReviews) {
+          await deleteEntity('reviews', review.review_id);
+        }
         this.setStatusMessage(`"${item.name}" deleted.`);
-        this.loadMenuItems();
-        this.loadReviews();
+        await this.loadMenuItems();
+        await this.loadReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Error deleting item.');
@@ -326,7 +351,7 @@ export default {
         comment: ''
       };
     },
-    saveReview() {
+    async saveReview() {
       if (!this.canReview) return;
       const payload = {
         stand_id: this.stand.stand_id,
@@ -336,10 +361,10 @@ export default {
         comment: this.reviewForm.comment.trim()
       };
       try {
-        createEntity('reviews', payload);
+        await createEntity('reviews', payload);
         this.setStatusMessage('Your review has been published!');
         this.cancelReviewForm();
-        this.loadReviews();
+        await this.loadReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Error publishing review.');

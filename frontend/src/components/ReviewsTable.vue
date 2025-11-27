@@ -150,14 +150,13 @@
 
 <script>
 import { formatDate } from '../utils/formatters';
-import usersData from '../data/users.json';
 import {
   listEntities,
   createEntity,
   updateEntity,
   deleteEntity,
   subscribeToEntity
-} from '../utils/fakeCrudService';
+} from '../utils/apiService';
 import DataTable from './common/DataTable.vue';
 import StarRating from './common/StarRating.vue';
 
@@ -172,7 +171,7 @@ export default {
       reviews: [],
       foodStands: [],
       menuItems: [],
-      users: usersData,
+      users: [],
       columns: [
         { key: 'review_id', label: 'ID' },
         { key: 'userName', label: 'User' },
@@ -248,18 +247,19 @@ export default {
       }
     }
   },
-  created() {
-    this.refreshReviews();
-    this.refreshFoodStands();
-    this.refreshMenuItems();
-    this.unsubscribeReviews = subscribeToEntity('reviews', data => {
+  async created() {
+    await this.refreshUsers();
+    await this.refreshReviews();
+    await this.refreshFoodStands();
+    await this.refreshMenuItems();
+    this.unsubscribeReviews = subscribeToEntity('reviews', async (data) => {
       this.reviews = data;
       this.syncSelection();
     });
-    this.unsubscribeStands = subscribeToEntity('foodStands', data => {
+    this.unsubscribeStands = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;
     });
-    this.unsubscribeMenu = subscribeToEntity('menuItems', data => {
+    this.unsubscribeMenu = subscribeToEntity('menuItems', async (data) => {
       this.menuItems = data;
     });
   },
@@ -275,19 +275,42 @@ export default {
   },
   methods: {
     formatDate,
-    refreshReviews() {
-      this.reviews = listEntities('reviews');
-      if (!this.selectedReview && this.reviews.length) {
-        this.selectedReview = this.reviews[0];
-      } else {
-        this.syncSelection();
+    async refreshUsers() {
+      try {
+        this.users = await listEntities('users');
+      } catch (error) {
+        console.error('Failed to load users', error);
+        this.users = [];
       }
     },
-    refreshFoodStands() {
-      this.foodStands = listEntities('foodStands');
+    async refreshReviews() {
+      try {
+        this.reviews = await listEntities('reviews');
+        if (!this.selectedReview && this.reviews.length) {
+          this.selectedReview = this.reviews[0];
+        } else {
+          this.syncSelection();
+        }
+      } catch (error) {
+        console.error('Failed to load reviews', error);
+        this.reviews = [];
+      }
     },
-    refreshMenuItems() {
-      this.menuItems = listEntities('menuItems');
+    async refreshFoodStands() {
+      try {
+        this.foodStands = await listEntities('foodStands');
+      } catch (error) {
+        console.error('Failed to load food stands', error);
+        this.foodStands = [];
+      }
+    },
+    async refreshMenuItems() {
+      try {
+        this.menuItems = await listEntities('menuItems');
+      } catch (error) {
+        console.error('Failed to load menu items', error);
+        this.menuItems = [];
+      }
     },
     syncSelection() {
       if (!this.selectedReview) {
@@ -366,40 +389,40 @@ export default {
         comment: this.formData.comment.trim()
       };
     },
-    submitForm() {
+    async submitForm() {
       if (!this.validateForm()) {
         return;
       }
       const payload = this.buildPayload();
       try {
         if (this.formMode === 'create') {
-          const created = createEntity('reviews', payload);
+          const created = await createEntity('reviews', payload);
           this.selectedReview = created;
           this.setStatusMessage('Review created successfully.');
         } else if (this.selectedReview) {
-          const updated = updateEntity('reviews', this.selectedReview.review_id, payload);
+          const updated = await updateEntity('reviews', this.selectedReview.review_id, payload);
           this.selectedReview = updated;
           this.setStatusMessage('Review updated successfully.');
         }
         this.showForm = false;
-        this.refreshReviews();
+        await this.refreshReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
-    confirmDelete(review) {
+    async confirmDelete(review) {
       const confirmed = window.confirm('Delete this review permanently?');
       if (!confirmed) {
         return;
       }
       try {
-        deleteEntity('reviews', review.review_id);
+        await deleteEntity('reviews', review.review_id);
         if (this.selectedReview && this.selectedReview.review_id === review.review_id) {
           this.selectedReview = null;
         }
         this.setStatusMessage('Review deleted.');
-        this.refreshReviews();
+        await this.refreshReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the review.');

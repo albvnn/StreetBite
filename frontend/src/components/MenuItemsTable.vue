@@ -161,7 +161,7 @@ import {
   updateEntity,
   deleteEntity,
   subscribeToEntity
-} from '../utils/fakeCrudService';
+} from '../utils/apiService';
 import DataTable from './common/DataTable.vue';
 import StatusBadge from './common/StatusBadge.vue';
 import VeganBadge from './common/VeganBadge.vue';
@@ -227,14 +227,14 @@ export default {
       });
     }
   },
-  created() {
-    this.refreshMenuItems();
-    this.refreshFoodStands();
-    this.unsubscribeMenu = subscribeToEntity('menuItems', data => {
+  async created() {
+    await this.refreshMenuItems();
+    await this.refreshFoodStands();
+    this.unsubscribeMenu = subscribeToEntity('menuItems', async (data) => {
       this.menuItems = data;
       this.syncSelection();
     });
-    this.unsubscribeStands = subscribeToEntity('foodStands', data => {
+    this.unsubscribeStands = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;
     });
   },
@@ -252,16 +252,26 @@ export default {
   methods: {
     formatDate,
     formatPrice,
-    refreshMenuItems() {
-      this.menuItems = listEntities('menuItems');
-      if (!this.selectedItem && this.menuItems.length) {
-        this.selectedItem = this.menuItems[0];
-      } else {
-        this.syncSelection();
+    async refreshMenuItems() {
+      try {
+        this.menuItems = await listEntities('menuItems');
+        if (!this.selectedItem && this.menuItems.length) {
+          this.selectedItem = this.menuItems[0];
+        } else {
+          this.syncSelection();
+        }
+      } catch (error) {
+        console.error('Failed to load menu items', error);
+        this.menuItems = [];
       }
     },
-    refreshFoodStands() {
-      this.foodStands = listEntities('foodStands');
+    async refreshFoodStands() {
+      try {
+        this.foodStands = await listEntities('foodStands');
+      } catch (error) {
+        console.error('Failed to load food stands', error);
+        this.foodStands = [];
+      }
     },
     syncSelection() {
       if (!this.selectedItem) {
@@ -331,49 +341,55 @@ export default {
         available: Boolean(this.formData.available)
       };
     },
-    submitForm() {
+    async submitForm() {
       if (!this.validateForm()) {
         return;
       }
       const payload = this.buildPayload();
       try {
         if (this.formMode === 'create') {
-          const created = createEntity('menuItems', payload);
+          const created = await createEntity('menuItems', payload);
           this.selectedItem = created;
           this.setStatusMessage(`"${created.name}" created successfully.`);
         } else if (this.selectedItem) {
-          const updated = updateEntity('menuItems', this.selectedItem.item_id, payload);
+          const updated = await updateEntity('menuItems', this.selectedItem.item_id, payload);
           this.selectedItem = updated;
           this.setStatusMessage(`"${updated.name}" updated successfully.`);
         }
         this.showForm = false;
-        this.refreshMenuItems();
+        await this.refreshMenuItems();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
-    confirmDelete(item) {
+    async confirmDelete(item) {
       const confirmed = window.confirm(`Delete "${item.name}" permanently?`);
       if (!confirmed) {
         return;
       }
       try {
-        deleteEntity('menuItems', item.item_id);
-        this.removeLinkedReviews(item.item_id);
+        await deleteEntity('menuItems', item.item_id);
+        await this.removeLinkedReviews(item.item_id);
         if (this.selectedItem && this.selectedItem.item_id === item.item_id) {
           this.selectedItem = null;
         }
         this.setStatusMessage(`"${item.name}" deleted.`);
-        this.refreshMenuItems();
+        await this.refreshMenuItems();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the menu item.');
       }
     },
-    removeLinkedReviews(itemId) {
-      const reviews = listEntities('reviews').filter(review => review.item_id === itemId);
-      reviews.forEach(review => deleteEntity('reviews', review.review_id));
+    async removeLinkedReviews(itemId) {
+      try {
+        const reviews = (await listEntities('reviews')).filter(review => review.item_id === itemId);
+        for (const review of reviews) {
+          await deleteEntity('reviews', review.review_id);
+        }
+      } catch (error) {
+        console.error('Error removing linked reviews', error);
+      }
     },
     setStatusMessage(message) {
       this.statusMessage = message;

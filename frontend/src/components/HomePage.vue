@@ -21,7 +21,7 @@
 
 <script>
 import { enrichRestaurantData } from '../utils/restaurantData';
-import { listEntities, subscribeToEntity } from '../utils/fakeCrudService';
+import { listEntities, subscribeToEntity } from '../utils/apiService';
 import SearchBar from './common/SearchBar.vue';
 import RestaurantCard from './common/RestaurantCard.vue';
 
@@ -66,14 +66,14 @@ export default {
       );
     }
   },
-  created() {
-    this.loadRestaurants();
-    this.loadReviews();
-    this.unsubscribeFn = subscribeToEntity('foodStands', () => {
-      this.loadRestaurants();
+  async created() {
+    await this.loadRestaurants();
+    await this.loadReviews();
+    this.unsubscribeFn = subscribeToEntity('foodStands', async () => {
+      await this.loadRestaurants();
     });
-    this.unsubscribeReviews = subscribeToEntity('reviews', () => {
-      this.loadReviews();
+    this.unsubscribeReviews = subscribeToEntity('reviews', async () => {
+      await this.loadReviews();
     });
   },
   beforeUnmount() {
@@ -85,11 +85,22 @@ export default {
     }
   },
   methods: {
-    loadRestaurants() {
-      this.restaurants = listEntities('foodStands').map(enrichRestaurantData);
+    async loadRestaurants() {
+      try {
+        const stands = await listEntities('foodStands');
+        this.restaurants = stands.map(enrichRestaurantData);
+      } catch (error) {
+        console.error('Failed to load restaurants', error);
+        this.restaurants = [];
+      }
     },
-    loadReviews() {
-      this.reviews = listEntities('reviews');
+    async loadReviews() {
+      try {
+        this.reviews = await listEntities('reviews');
+      } catch (error) {
+        console.error('Failed to load reviews', error);
+        this.reviews = [];
+      }
     }
   }
 };

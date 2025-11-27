@@ -9,28 +9,28 @@ import reviewsApiRouter from './controllers/reviewsapi.route.js';
 import usersApiRouter from './controllers/usersapi.route.js';
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
-// Configuration CORS plus permissive pour le développement
+// Configuration CORS simplifiée et permissive pour le développement
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
+  origin: true, // Permet toutes les origines
+  credentials: false,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
-
-// Gérer explicitement les requêtes OPTIONS (preflight)
-app.options('*', cors());
 
 app.use(bodyParser.json());
 
-// Middleware pour logger toutes les requêtes
+// Middleware pour logger toutes les requêtes (après CORS)
 app.use((req, res, next) => {
   const startTime = Date.now();
   const timestamp = new Date().toISOString();
   
-  // Ignorer les requêtes de health check pour réduire le bruit dans les logs
-  if (req.path !== '/health') {
+  // Ignorer les requêtes de health check et OPTIONS pour réduire le bruit dans les logs
+  if (req.path !== '/health' && req.method !== 'OPTIONS') {
     console.log(`[${timestamp}] [REQUEST] ${req.method} ${req.path}`, {
       query: Object.keys(req.query).length > 0 ? req.query : undefined,
       body: Object.keys(req.body || {}).length > 0 ? req.body : undefined,
@@ -45,7 +45,7 @@ app.use((req, res, next) => {
   const originalJson = res.json;
   res.json = function(data) {
     const duration = Date.now() - startTime;
-    if (req.path !== '/health') {
+    if (req.path !== '/health' && req.method !== 'OPTIONS') {
       const responseData = Array.isArray(data) 
         ? `[Array with ${data.length} items]` 
         : (typeof data === 'object' && data !== null && Object.keys(data).length > 10
@@ -59,7 +59,7 @@ app.use((req, res, next) => {
   const originalSend = res.send;
   res.send = function(data) {
     const duration = Date.now() - startTime;
-    if (req.path !== '/health' && res.statusCode !== 204) {
+    if (req.path !== '/health' && res.statusCode !== 204 && req.method !== 'OPTIONS') {
       console.log(`[${new Date().toISOString()}] [RESPONSE] ${req.method} ${req.path} - Status: ${res.statusCode} - Duration: ${duration}ms`);
     }
     return originalSend.call(this, data);

@@ -123,7 +123,7 @@
           <div class="detail-grid">
             <div>
               <span class="label">Submitted</span>
-              <p>{{ formatDate(selectedReview.created_at) }}</p>
+              <p>{{ formatDate(selectedReview.reviewed_at) }}</p>
             </div>
             <div v-if="selectedReview.updated_at">
               <span class="label">Updated</span>
@@ -213,7 +213,7 @@ export default {
     filteredReviews() {
       const query = this.searchQuery.trim().toLowerCase();
       const ordered = [...this.tableRows].sort((a, b) =>
-        b.created_at.localeCompare(a.created_at)
+        (b.reviewed_at || '').localeCompare(a.reviewed_at || '')
       );
       if (!query) {
         return ordered;

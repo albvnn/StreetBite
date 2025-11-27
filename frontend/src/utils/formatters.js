@@ -10,6 +10,11 @@ export function formatDate(dateString) {
 }
 
 export function formatPrice(price) {
-  return `€${price.toFixed(2)}`;
+  // Convertir en nombre si c'est une string (MySQL DECIMAL peut être retourné comme string)
+  const numPrice = typeof price === 'string' ? parseFloat(price) : Number(price);
+  if (isNaN(numPrice)) {
+    return '€0.00';
+  }
+  return `€${numPrice.toFixed(2)}`;
 }
 

@@ -12,8 +12,8 @@
 </template>
 
 <script>
-import usersData from '../data/users.json';
 import { formatDate } from '../utils/formatters';
+import { listEntities } from '../utils/apiService';
 import DataTable from './common/DataTable.vue';
 import RoleBadge from './common/RoleBadge.vue';
 
@@ -25,7 +25,7 @@ export default {
   },
   data() {
     return {
-      users: usersData,
+      users: [],
       columns: [
         { key: 'user_id', label: 'ID' },
         { key: 'name', label: 'Name' },
@@ -36,6 +36,19 @@ export default {
         { key: 'created_at', label: 'Created At', formatter: formatDate }
       ]
     };
+  },
+  async created() {
+    await this.loadUsers();
+  },
+  methods: {
+    async loadUsers() {
+      try {
+        this.users = await listEntities('users');
+      } catch (error) {
+        console.error('Failed to load users', error);
+        this.users = [];
+      }
+    }
   }
 };
 </script>

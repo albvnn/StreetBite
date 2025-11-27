@@ -27,8 +27,9 @@
       <div class="demo-hint">
         <p><strong>Demo emails:</strong></p>
         <ul>
-          <li>alice.johnson@email.com (customer)</li>
-          <li>bob.smith@email.com (owner)</li>
+          <li>ava@example.com (customer)</li>
+          <li>maya@example.com (owner)</li>
+          <li>kenji@example.com (owner)</li>
         </ul>
       </div>
     </div>
@@ -68,7 +69,7 @@ export default {
       this.loading = true;
 
       try {
-        const result = login(this.email);
+        const result = await login(this.email);
         if (result.success) {
           this.$emit('success', result.user);
           this.close();

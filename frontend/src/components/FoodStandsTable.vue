@@ -136,10 +136,6 @@
               <span class="label">Created</span>
               <p>{{ formatDate(selectedStand.created_at) }}</p>
             </div>
-            <div v-if="selectedStand.updated_at">
-              <span class="label">Updated</span>
-              <p>{{ formatDate(selectedStand.updated_at) }}</p>
-            </div>
           </div>
           <div class="detail-actions">
             <button class="secondary-btn" @click="startEdit(selectedStand)">Edit</button>

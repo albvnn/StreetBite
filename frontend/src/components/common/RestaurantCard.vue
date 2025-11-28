@@ -31,7 +31,7 @@
             <span class="rating-text">{{ restaurant.averageRating.toFixed(1) }}</span>
             <span class="review-count">({{ restaurant.reviewCount }})</span>
           </div>
-          <StatusBadge :is-active="restaurant.is_active" />
+          <StatusBadge :is-active="isCurrentlyOpen" />
         </div>
       </div>
     </div>
@@ -41,6 +41,7 @@
 <script>
 import StatusBadge from './StatusBadge.vue';
 import StarRating from './StarRating.vue';
+import { isStandOpenNow } from '../../utils/openingHours';
 
 export default {
   name: 'RestaurantCard',
@@ -52,6 +53,14 @@ export default {
     restaurant: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    isCurrentlyOpen() {
+      if (!this.restaurant) {
+        return false;
+      }
+      return Boolean(this.restaurant.is_active && isStandOpenNow(this.restaurant.opening_hours));
     }
   }
 };

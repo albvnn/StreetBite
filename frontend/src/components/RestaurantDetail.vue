@@ -7,7 +7,7 @@
         <p class="hero-location">📍 {{ stand.location }}</p>
         <div class="hero-meta">
           <CategoryBadge :category="stand.category" />
-          <StatusBadge :is-active="stand.is_active" active-text="Open" inactive-text="Closed" />
+          <StatusBadge :is-active="isCurrentlyOpen" active-text="Open" inactive-text="Closed" />
         </div>
         <p class="hero-hours">🕐 {{ stand.opening_hours }}</p>
       </div>
@@ -165,6 +165,7 @@ import { formatDate, formatPrice } from '../utils/formatters';
 import { getCurrentUser, isOwner } from '../utils/authService';
 import { listEntities, createEntity, updateEntity, deleteEntity, getEntityById } from '../utils/apiService';
 import { enrichRestaurantData } from '../utils/restaurantData';
+import { isStandOpenNow } from '../utils/openingHours';
 import CategoryBadge from './common/CategoryBadge.vue';
 import StatusBadge from './common/StatusBadge.vue';
 import VeganBadge from './common/VeganBadge.vue';
@@ -216,6 +217,12 @@ export default {
     },
     canReview() {
       return this.currentUser && this.currentUser.role === 'customer';
+    },
+    isCurrentlyOpen() {
+      if (!this.stand) {
+        return false;
+      }
+      return Boolean(this.stand.is_active && isStandOpenNow(this.stand.opening_hours));
     }
   },
   async created() {

@@ -2,7 +2,7 @@
   <header class="header">
     <div class="logo-container">
       <router-link to="/" class="logo-link">
-        <span class="logo-icon">🌮</span>
+        <img src="/logo.png" alt="StreetBite" class="logo-icon" />
         <h1 class="logo-text">StreetBite</h1>
       </router-link>
     </div>
@@ -96,7 +96,9 @@ export default {
 }
 
 .logo-icon {
-  font-size: 2.5em;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
 .logo-text {

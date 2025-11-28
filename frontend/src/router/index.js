@@ -14,41 +14,49 @@ const routes = [
   {
     path: '/',
     name: 'home',
-    component: HomePage
+    component: HomePage,
+    meta: { title: 'Home' }
   },
   {
     path: '/restaurant/:id',
     name: 'restaurantDetail',
-    component: RestaurantDetail
+    component: RestaurantDetail,
+    meta: { title: 'Restaurant' }
   },
   {
     path: '/admin/gate',
     name: 'adminGate',
-    component: AdminGate
+    component: AdminGate,
+    meta: { title: 'Admin Access' }
   },
   {
     path: '/admin',
     component: AdminPanel,
+    meta: { title: 'Admin' },
     children: [
       {
         path: 'users',
         name: 'adminUsers',
-        component: UsersTable
+        component: UsersTable,
+        meta: { title: 'Admin · Users' }
       },
       {
         path: 'food-stands',
         name: 'adminFoodStands',
-        component: FoodStandsTable
+        component: FoodStandsTable,
+        meta: { title: 'Admin · Food Stands' }
       },
       {
         path: 'menu-items',
         name: 'adminMenuItems',
-        component: MenuItemsTable
+        component: MenuItemsTable,
+        meta: { title: 'Admin · Menu Items' }
       },
       {
         path: 'reviews',
         name: 'adminReviews',
-        component: ReviewsTable
+        component: ReviewsTable,
+        meta: { title: 'Admin · Reviews' }
       },
       {
         path: '',
@@ -83,6 +91,12 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
+});
+
+router.afterEach(to => {
+  const titleSegment = to.meta?.title;
+  const baseTitle = 'StreetBite';
+  document.title = titleSegment ? `${baseTitle} - ${titleSegment}` : baseTitle;
 });
 
 export default router;

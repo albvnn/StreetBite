@@ -69,11 +69,11 @@ export default {
   async created() {
     await this.loadRestaurants();
     await this.loadReviews();
-    this.unsubscribeFn = subscribeToEntity('foodStands', async () => {
-      await this.loadRestaurants();
+    this.unsubscribeFn = subscribeToEntity('foodStands', (data) => {
+      this.restaurants = data.map(enrichRestaurantData);
     });
-    this.unsubscribeReviews = subscribeToEntity('reviews', async () => {
-      await this.loadReviews();
+    this.unsubscribeReviews = subscribeToEntity('reviews', (data) => {
+      this.reviews = data;
     });
   },
   beforeUnmount() {

@@ -1,5 +1,5 @@
 <template>
-  <span class="category-badge">{{ category }}</span>
+  <span class="category-badge">{{ capitalizedCategory }}</span>
 </template>
 
 <script>
@@ -9,6 +9,12 @@ export default {
     category: {
       type: String,
       required: true
+    }
+  },
+  computed: {
+    capitalizedCategory() {
+      if (!this.category) return '';
+      return this.category.charAt(0).toUpperCase() + this.category.slice(1).toLowerCase();
     }
   }
 };

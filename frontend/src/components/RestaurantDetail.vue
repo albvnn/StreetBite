@@ -105,15 +105,6 @@
             <h3>Your Review</h3>
             <form @submit.prevent="saveReview" class="form-grid">
               <label>
-                Menu Item
-                <select v-model.number="reviewForm.item_id" required>
-                  <option disabled value="">Select an item</option>
-                  <option v-for="item in menuItems" :key="item.item_id" :value="item.item_id">
-                    {{ item.name }}
-                  </option>
-                </select>
-              </label>
-              <label>
                 Rating
                 <select v-model.number="reviewForm.rating" required>
                   <option v-for="r in [5, 4, 3, 2, 1]" :key="r" :value="r">{{ r }}/5</option>
@@ -141,7 +132,6 @@
               <div class="review-header">
                 <div>
                   <strong>{{ getUserName(review.user_id) }}</strong>
-                  <span class="review-item">{{ getItemName(review.item_id) }}</span>
                 </div>
                 <StarRating :rating="review.rating" />
               </div>
@@ -196,7 +186,6 @@ export default {
         available: true
       },
       reviewForm: {
-        item_id: '',
         rating: 5,
         comment: ''
       },
@@ -337,14 +326,8 @@ export default {
       if (!confirm(`Delete "${item.name}"?`)) return;
       try {
         await deleteEntity('menuItems', item.item_id);
-        const allReviews = await listEntities('reviews');
-        const itemReviews = allReviews.filter(r => r.item_id === item.item_id);
-        for (const review of itemReviews) {
-          await deleteEntity('reviews', review.review_id);
-        }
         this.setStatusMessage(`"${item.name}" deleted.`);
         await this.loadMenuItems();
-        await this.loadReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Error deleting item.');
@@ -353,7 +336,6 @@ export default {
     cancelReviewForm() {
       this.showReviewForm = false;
       this.reviewForm = {
-        item_id: '',
         rating: 5,
         comment: ''
       };
@@ -362,7 +344,6 @@ export default {
       if (!this.canReview) return;
       const payload = {
         stand_id: this.stand.stand_id,
-        item_id: Number(this.reviewForm.item_id),
         user_id: this.currentUser.user_id,
         rating: Number(this.reviewForm.rating),
         comment: this.reviewForm.comment.trim()
@@ -380,10 +361,6 @@ export default {
     getUserName(userId) {
       const user = this.users.find(u => u.user_id === Number(userId));
       return user ? user.name : `User #${userId}`;
-    },
-    getItemName(itemId) {
-      const item = this.menuItems.find(i => i.item_id === Number(itemId));
-      return item ? item.name : `Item #${itemId}`;
     },
     setStatusMessage(message) {
       this.statusMessage = message;
@@ -731,13 +708,6 @@ export default {
   font-size: 1.1em;
   color: #333;
 }
-
-.review-item {
-  color: #666;
-  font-size: 0.9em;
-  margin-left: 8px;
-}
-
 
 .review-comment {
   color: #555;

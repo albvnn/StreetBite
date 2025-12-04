@@ -68,12 +68,33 @@
             </label>
             <label>
               Category
-              <input
-                v-model="formData.category"
-                type="text"
-                required
-                placeholder="Cuisine type"
+              <select v-model="formData.category" required>
+                <option disabled value="">Select a category</option>
+                <option value="tacos">Tacos</option>
+                <option value="noodles">Noodles</option>
+                <option value="falafel">Falafel</option>
+                <option value="burgers">Burgers</option>
+                <option value="curry">Curry</option>
+                <option value="crepe">Crêpe</option>
+                <option value="kebab">Kebab</option>
+                <option value="gyro">Gyro</option>
+                <option value="bao">Bao</option>
+                <option value="sushi">Sushi</option>
+                <option value="vegan">Vegan</option>
+                <option value="mexican">Mexican</option>
+                <option value="dessert">Dessert</option>
+                <option value="soup">Soup</option>
+                <option value="arepa">Arepa</option>
+              </select>
+            </label>
+            <label class="full-width" v-if="formData.category">
+              <span>Preview Image</span>
+              <img
+                :src="getCategoryImage(formData.category)"
+                :alt="formData.category"
+                class="category-preview-image"
               />
+              <p class="image-info">Image automatically selected based on category</p>
             </label>
             <label>
               Owner ID
@@ -238,6 +259,23 @@ export default {
         closingTime: '22:00',
         is_active: true
       },
+      categoryImages: {
+        tacos: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b',
+        noodles: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624',
+        falafel: 'https://images.unsplash.com/photo-1601050690597-df0568f70950',
+        burgers: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd',
+        curry: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641',
+        crepe: 'https://images.unsplash.com/photo-1519676867240-f03562e64548',
+        kebab: 'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0',
+        gyro: 'https://images.unsplash.com/photo-1621998604581-ebe3cb0a4de8',
+        bao: 'https://images.unsplash.com/photo-1563865436874-9aef32095fad',
+        sushi: 'https://images.unsplash.com/photo-1579584425555-c3ce17fd4351',
+        vegan: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd',
+        mexican: 'https://images.unsplash.com/photo-1565299507177-b0ac66763828',
+        dessert: 'https://images.unsplash.com/photo-1599599810769-bcde5a160d32',
+        soup: 'https://images.unsplash.com/photo-1591814468924-caf88d1232e1',
+        arepa: 'https://images.unsplash.com/photo-1620571192144-b79c09229774'
+      },
       statusMessage: '',
       statusTimeout: null,
       unsubscribeFn: null
@@ -352,6 +390,9 @@ export default {
   },
   methods: {
     formatDate,
+    getCategoryImage(category) {
+      return this.categoryImages[category] || '';
+    },
     async refreshFoodStands() {
       try {
         this.foodStands = await listEntities('foodStands');
@@ -691,6 +732,23 @@ export default {
 .opening-hours-selector span {
   color: #666;
   font-size: 0.9em;
+}
+
+.category-preview-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+}
+
+.image-info {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 4px;
+  font-style: italic;
 }
 
 .checkbox-field {

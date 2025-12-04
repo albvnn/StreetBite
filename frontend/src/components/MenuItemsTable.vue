@@ -223,12 +223,16 @@ export default {
       });
     }
   },
-  async created() {
-    await this.refreshMenuItems();
-    await this.refreshFoodStands();
+  created() {
+    // subscribeToEntity automatically loads initial data, so we don't need to call refresh methods separately
     this.unsubscribeMenu = subscribeToEntity('menuItems', async (data) => {
       this.menuItems = data;
-      this.syncSelection();
+      // Set initial selection if none is selected and we have data
+      if (!this.selectedItem && this.menuItems.length) {
+        this.selectedItem = this.menuItems[0];
+      } else {
+        this.syncSelection();
+      }
     });
     this.unsubscribeStands = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;

@@ -247,14 +247,21 @@ export default {
       }
     }
   },
-  async created() {
-    await this.refreshUsers();
-    await this.refreshReviews();
-    await this.refreshFoodStands();
-    await this.refreshMenuItems();
+  created() {
+    // subscribeToEntity automatically loads initial data, so we don't need to call refresh methods separately
+    // Note: Users don't have a subscription, so we still need to load them manually
+    this.refreshUsers().catch(err => {
+      console.error('Failed to load users', err);
+    });
+    
     this.unsubscribeReviews = subscribeToEntity('reviews', async (data) => {
       this.reviews = data;
-      this.syncSelection();
+      // Set initial selection if none is selected and we have data
+      if (!this.selectedReview && this.reviews.length) {
+        this.selectedReview = this.reviews[0];
+      } else {
+        this.syncSelection();
+      }
     });
     this.unsubscribeStands = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;

@@ -21,7 +21,7 @@
 
 <script>
 import { enrichRestaurantData } from '../utils/restaurantData';
-import { listEntities, subscribeToEntity } from '../utils/apiService';
+import { subscribeToEntity } from '../utils/apiService';
 import SearchBar from './common/SearchBar.vue';
 import RestaurantCard from './common/RestaurantCard.vue';
 
@@ -66,9 +66,8 @@ export default {
       );
     }
   },
-  async created() {
-    await this.loadRestaurants();
-    await this.loadReviews();
+  created() {
+    // subscribeToEntity automatically loads initial data, so we don't need to call loadRestaurants/loadReviews separately
     this.unsubscribeFn = subscribeToEntity('foodStands', (data) => {
       this.restaurants = data.map(enrichRestaurantData);
     });
@@ -82,25 +81,6 @@ export default {
     }
     if (this.unsubscribeReviews) {
       this.unsubscribeReviews();
-    }
-  },
-  methods: {
-    async loadRestaurants() {
-      try {
-        const stands = await listEntities('foodStands');
-        this.restaurants = stands.map(enrichRestaurantData);
-      } catch (error) {
-        console.error('Failed to load restaurants', error);
-        this.restaurants = [];
-      }
-    },
-    async loadReviews() {
-      try {
-        this.reviews = await listEntities('reviews');
-      } catch (error) {
-        console.error('Failed to load reviews', error);
-        this.reviews = [];
-      }
     }
   }
 };

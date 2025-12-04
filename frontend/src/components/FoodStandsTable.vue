@@ -221,11 +221,16 @@ export default {
       });
     }
   },
-  async created() {
-    await this.refreshFoodStands();
+  created() {
+    // subscribeToEntity automatically loads initial data, so we don't need to call refreshFoodStands separately
     this.unsubscribeFn = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;
-      this.syncSelection();
+      // Set initial selection if none is selected and we have data
+      if (!this.selectedStand && this.foodStands.length) {
+        this.selectedStand = this.foodStands[0];
+      } else {
+        this.syncSelection();
+      }
     });
   },
   beforeUnmount() {

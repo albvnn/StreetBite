@@ -36,10 +36,10 @@
             <span class="stand-pill">{{ value }}</span>
           </template>
           <template #cell-is_vegan="{ value }">
-            <VeganBadge :is-vegan="value" />
+            <VeganBadge :is-vegan="Boolean(value)" />
           </template>
           <template #cell-available="{ value }">
-            <StatusBadge :is-active="value" active-text="Yes" inactive-text="No" />
+            <StatusBadge :is-active="Boolean(value)" active-text="Yes" inactive-text="No" />
           </template>
           <template #cell-actions="{ row }">
             <div class="table-actions">
@@ -111,7 +111,7 @@
               <p class="detail-location">{{ getStandName(selectedItem.stand_id) }}</p>
             </div>
             <StatusBadge
-              :is-active="selectedItem.available"
+              :is-active="Boolean(selectedItem.available)"
               active-text="Available"
               inactive-text="Unavailable"
             />

@@ -34,7 +34,7 @@
           </template>
           <template #cell-is_active="{ value }">
             <StatusBadge
-              :is-active="value"
+              :is-active="Boolean(value)"
               active-text="Active"
               inactive-text="Inactive"
             />
@@ -86,15 +86,48 @@
               />
             </label>
             <label class="full-width">
-              Opening Hours
+              Opening Days
+              <div class="opening-hours-selector">
+                <select v-model="formData.openingDaysStart" required>
+                  <option value="Mon">Monday</option>
+                  <option value="Tue">Tuesday</option>
+                  <option value="Wed">Wednesday</option>
+                  <option value="Thu">Thursday</option>
+                  <option value="Fri">Friday</option>
+                  <option value="Sat">Saturday</option>
+                  <option value="Sun">Sunday</option>
+                  <option value="Daily">Daily</option>
+                </select>
+                <span v-if="formData.openingDaysStart !== 'Daily'">to</span>
+                <select v-if="formData.openingDaysStart !== 'Daily'" v-model="formData.openingDaysEnd">
+                  <option
+                    v-for="day in availableEndDays"
+                    :key="day.value"
+                    :value="day.value"
+                  >
+                    {{ day.label }}
+                  </option>
+                </select>
+              </div>
+            </label>
+            <label>
+              Opening Time
               <input
-                v-model="formData.opening_hours"
-                type="text"
+                v-model="formData.openingTime"
+                type="time"
                 required
-                placeholder="Mon-Sun: 10:00-22:00"
               />
             </label>
-            <label class="checkbox-field full-width">
+            <label>
+              Closing Time
+              <input
+                v-model="formData.closingTime"
+                type="time"
+                :min="minClosingTime"
+                required
+              />
+            </label>
+            <label v-if="formMode === 'edit'" class="checkbox-field full-width">
               <input v-model="formData.is_active" type="checkbox" />
               <span>Stand is active</span>
             </label>
@@ -114,7 +147,7 @@
               <p class="detail-location">{{ selectedStand.location }}</p>
             </div>
             <StatusBadge
-              :is-active="selectedStand.is_active"
+              :is-active="Boolean(selectedStand.is_active)"
               active-text="Active"
               inactive-text="Inactive"
             />
@@ -199,6 +232,10 @@ export default {
         category: '',
         owner_id: 1,
         opening_hours: '',
+        openingDaysStart: 'Mon',
+        openingDaysEnd: 'Sun',
+        openingTime: '10:00',
+        closingTime: '22:00',
         is_active: true
       },
       statusMessage: '',
@@ -219,6 +256,78 @@ export default {
         const haystack = `${stand.name} ${stand.location} ${stand.category}`.toLowerCase();
         return haystack.includes(query);
       });
+    },
+    dayOrder() {
+      return {
+        Mon: 1,
+        Tue: 2,
+        Wed: 3,
+        Thu: 4,
+        Fri: 5,
+        Sat: 6,
+        Sun: 7
+      };
+    },
+    availableEndDays() {
+      if (this.formData.openingDaysStart === 'Daily') {
+        return [];
+      }
+      const days = [
+        { value: 'Mon', label: 'Monday' },
+        { value: 'Tue', label: 'Tuesday' },
+        { value: 'Wed', label: 'Wednesday' },
+        { value: 'Thu', label: 'Thursday' },
+        { value: 'Fri', label: 'Friday' },
+        { value: 'Sat', label: 'Saturday' },
+        { value: 'Sun', label: 'Sunday' }
+      ];
+      const startOrder = this.dayOrder[this.formData.openingDaysStart] || 0;
+      return days.filter(day => this.dayOrder[day.value] >= startOrder);
+    },
+    minClosingTime() {
+      // Retourne l'heure minimale pour la fermeture (1 minute après l'ouverture)
+      if (!this.formData.openingTime) {
+        return '00:01';
+      }
+      const [hours, minutes] = this.formData.openingTime.split(':').map(Number);
+      const nextMinute = (minutes + 1) % 60;
+      const nextHour = nextMinute === 0 ? (hours + 1) % 24 : hours;
+      return `${String(nextHour).padStart(2, '0')}:${String(nextMinute).padStart(2, '0')}`;
+    }
+  },
+  watch: {
+    'formData.openingDaysStart'(newVal) {
+      // Si le jour de début change et que le jour de fin est maintenant invalide, le corriger
+      if (newVal !== 'Daily' && this.formData.openingDaysEnd) {
+        const startOrder = this.dayOrder[newVal] || 0;
+        const endOrder = this.dayOrder[this.formData.openingDaysEnd] || 0;
+        if (endOrder < startOrder) {
+          // Le jour de fin est avant le jour de début, le mettre au même jour
+          this.formData.openingDaysEnd = newVal;
+        }
+      }
+    },
+    'formData.openingTime'(newVal) {
+      // Si l'heure d'ouverture change et que l'heure de fermeture est maintenant invalide, la corriger
+      if (newVal && this.formData.closingTime) {
+        if (this.formData.closingTime <= newVal) {
+          // L'heure de fermeture est avant ou égale à l'heure d'ouverture
+          // Ajouter 1 heure à l'heure d'ouverture
+          const [hours, minutes] = newVal.split(':').map(Number);
+          const nextHour = (hours + 1) % 24;
+          this.formData.closingTime = `${String(nextHour).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+        }
+      }
+    },
+    'formData.closingTime'(newVal) {
+      // Si l'heure de fermeture est sélectionnée et qu'elle est invalide, la corriger
+      if (newVal && this.formData.openingTime) {
+        if (newVal <= this.formData.openingTime) {
+          // L'heure de fermeture est avant ou égale à l'heure d'ouverture
+          // Utiliser l'heure minimale
+          this.formData.closingTime = this.minClosingTime;
+        }
+      }
     }
   },
   created() {
@@ -271,6 +380,10 @@ export default {
         category: '',
         owner_id: 1,
         opening_hours: '',
+        openingDaysStart: 'Mon',
+        openingDaysEnd: 'Sun',
+        openingTime: '10:00',
+        closingTime: '22:00',
         is_active: true
       };
       this.showForm = true;
@@ -282,12 +395,17 @@ export default {
     },
     startEdit(stand) {
       this.formMode = 'edit';
+      const parsed = this.parseOpeningHours(stand.opening_hours);
       this.formData = {
         name: stand.name,
         location: stand.location,
         category: stand.category,
         owner_id: stand.owner_id,
         opening_hours: stand.opening_hours,
+        openingDaysStart: parsed.daysStart,
+        openingDaysEnd: parsed.daysEnd,
+        openingTime: parsed.openingTime,
+        closingTime: parsed.closingTime,
         is_active: stand.is_active
       };
       this.selectedStand = stand;
@@ -302,17 +420,101 @@ export default {
         category: '',
         owner_id: 1,
         opening_hours: '',
+        openingDaysStart: 'Mon',
+        openingDaysEnd: 'Sun',
+        openingTime: '10:00',
+        closingTime: '22:00',
         is_active: true
       };
     },
     validateForm() {
-      const fields = ['name', 'location', 'category', 'opening_hours'];
+      const fields = ['name', 'location', 'category'];
       const missing = fields.some(field => !this.formData[field]?.trim());
-      if (missing || !this.formData.owner_id) {
+      if (missing || !this.formData.owner_id || !this.formData.openingTime || !this.formData.closingTime) {
         this.setStatusMessage('Please fill in all required fields.');
         return false;
       }
+      if (this.formData.openingDaysStart !== 'Daily' && !this.formData.openingDaysEnd) {
+        this.setStatusMessage('Please select an end day.');
+        return false;
+      }
+      // Vérifier que le jour de fin n'est pas avant le jour de début
+      if (this.formData.openingDaysStart !== 'Daily' && this.formData.openingDaysEnd) {
+        const startOrder = this.dayOrder[this.formData.openingDaysStart] || 0;
+        const endOrder = this.dayOrder[this.formData.openingDaysEnd] || 0;
+        if (endOrder < startOrder) {
+          this.setStatusMessage('The end day cannot be before the start day.');
+          return false;
+        }
+      }
+      // Vérifier que l'heure de fermeture n'est pas avant l'heure d'ouverture
+      if (this.formData.openingTime && this.formData.closingTime) {
+        if (this.formData.closingTime <= this.formData.openingTime) {
+          this.setStatusMessage('The closing time must be after the opening time.');
+          return false;
+        }
+      }
       return true;
+    },
+    formatOpeningHours() {
+      let daysPart = '';
+      if (this.formData.openingDaysStart === 'Daily') {
+        daysPart = 'Daily';
+      } else {
+        daysPart = `${this.formData.openingDaysStart}-${this.formData.openingDaysEnd}`;
+      }
+      return `${daysPart} ${this.formData.openingTime}-${this.formData.closingTime}`;
+    },
+    parseOpeningHours(openingHours) {
+      // Default values
+      let daysStart = 'Mon';
+      let daysEnd = 'Sun';
+      let openingTime = '10:00';
+      let closingTime = '22:00';
+
+      if (!openingHours) {
+        return { daysStart, daysEnd, openingTime, closingTime };
+      }
+
+      // Parse formats like "Mon-Sun 11:00-22:00", "Daily 12:00-23:00", "Mon-Sun: 10:00-22:00", etc.
+      const trimmed = openingHours.trim();
+      
+      // Extract time pattern (HH:MM-HH:MM)
+      const timeMatch = trimmed.match(/(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/);
+      if (timeMatch) {
+        openingTime = timeMatch[1].padStart(5, '0'); // Ensure HH:MM format
+        closingTime = timeMatch[2].padStart(5, '0');
+      }
+      
+      // Extract days part (everything before the time)
+      const daysPart = trimmed.substring(0, timeMatch ? timeMatch.index : trimmed.length).trim();
+      
+      // Remove colon if present (e.g., "Mon-Sun:" -> "Mon-Sun")
+      const cleanDaysPart = daysPart.replace(/:\s*$/, '');
+      
+      // Parse days
+      if (cleanDaysPart.toLowerCase() === 'daily') {
+        daysStart = 'Daily';
+        daysEnd = 'Sun';
+      } else if (cleanDaysPart.includes('-')) {
+        const [start, end] = cleanDaysPart.split('-').map(s => s.trim());
+        // Capitalize first letter, lowercase rest
+        daysStart = start.charAt(0).toUpperCase() + start.slice(1).toLowerCase();
+        daysEnd = end.charAt(0).toUpperCase() + end.slice(1).toLowerCase();
+      } else if (cleanDaysPart) {
+        // Single day or special text like "Matchdays", "Evenings"
+        const lower = cleanDaysPart.toLowerCase();
+        if (lower === 'matchdays' || lower === 'evenings') {
+          // For special cases, default to Mon-Sun
+          daysStart = 'Mon';
+          daysEnd = 'Sun';
+        } else {
+          daysStart = cleanDaysPart.charAt(0).toUpperCase() + cleanDaysPart.slice(1).toLowerCase();
+          daysEnd = daysStart;
+        }
+      }
+
+      return { daysStart, daysEnd, openingTime, closingTime };
     },
     buildPayload() {
       return {
@@ -320,8 +522,8 @@ export default {
         location: this.formData.location.trim(),
         category: this.formData.category.trim(),
         owner_id: Number(this.formData.owner_id),
-        opening_hours: this.formData.opening_hours.trim(),
-        is_active: Boolean(this.formData.is_active)
+        opening_hours: this.formatOpeningHours(),
+        is_active: this.formMode === 'create' ? true : Boolean(this.formData.is_active)
       };
     },
     async submitForm() {
@@ -465,12 +667,30 @@ export default {
 }
 
 .form-grid input,
-.form-grid textarea {
+.form-grid textarea,
+.form-grid select {
   margin-top: 6px;
   padding: 10px 12px;
   border-radius: 8px;
   border: 1px solid #ddd;
   font-family: 'Inter', sans-serif;
+}
+
+.opening-hours-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.opening-hours-selector select {
+  flex: 1;
+  margin-top: 0;
+}
+
+.opening-hours-selector span {
+  color: #666;
+  font-size: 0.9em;
 }
 
 .checkbox-field {

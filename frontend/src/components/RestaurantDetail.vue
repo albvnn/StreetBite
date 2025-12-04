@@ -71,7 +71,7 @@
               <div class="menu-item-header">
                 <h3>{{ item.name }}</h3>
                 <div class="menu-item-badges">
-                  <VeganBadge v-if="item.is_vegan" :is-vegan="true" />
+                  <VeganBadge v-if="item.is_vegan" :is-vegan="Boolean(item.is_vegan)" />
                   <span v-if="!item.available" class="unavailable-badge">Unavailable</span>
                 </div>
               </div>

@@ -3,7 +3,7 @@
     <div class="crud-header">
       <div>
         <h2>Reviews</h2>
-        <p class="subtitle">Track every customer review for stands and menu items.</p>
+        <p class="subtitle">Track every customer review for food stands.</p>
       </div>
       <button class="primary-btn" @click="openCreateForm">
         + New Review
@@ -16,7 +16,7 @@
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Search reviews by user, stand, item or comment..."
+            placeholder="Search reviews by user, stand or comment..."
           />
         </div>
 
@@ -31,9 +31,6 @@
           </template>
           <template #cell-standName="{ value }">
             <span class="stand-pill">{{ value }}</span>
-          </template>
-          <template #cell-itemName="{ value }">
-            <span>{{ value }}</span>
           </template>
           <template #cell-rating="{ value }">
             <StarRating :rating="value" />
@@ -58,19 +55,6 @@
                 <option disabled value="">Select a stand</option>
                 <option v-for="stand in foodStands" :key="stand.stand_id" :value="stand.stand_id">
                   {{ stand.name }}
-                </option>
-              </select>
-            </label>
-            <label>
-              Menu Item
-              <select v-model="formData.item_id" required>
-                <option disabled value="">Select a menu item</option>
-                <option
-                  v-for="item in filteredItemsForStand"
-                  :key="item.item_id"
-                  :value="item.item_id"
-                >
-                  {{ item.name }}
                 </option>
               </select>
             </label>
@@ -114,7 +98,7 @@
             <div>
               <h3>{{ getUserName(selectedReview.user_id) }}</h3>
               <p class="detail-location">
-                {{ getStandName(selectedReview.stand_id) }} • {{ getItemName(selectedReview.item_id) }}
+                {{ getStandName(selectedReview.stand_id) }}
               </p>
             </div>
             <StarRating :rating="selectedReview.rating" />
@@ -170,16 +154,14 @@ export default {
     return {
       reviews: [],
       foodStands: [],
-      menuItems: [],
       users: [],
       columns: [
         { key: 'review_id', label: 'ID' },
         { key: 'userName', label: 'User' },
         { key: 'standName', label: 'Stand' },
-        { key: 'itemName', label: 'Menu Item' },
         { key: 'rating', label: 'Rating' },
         { key: 'comment', label: 'Comment' },
-        { key: 'created_at', label: 'Created At', formatter: formatDate },
+        { key: 'reviewed_at', label: 'Reviewed At', formatter: formatDate },
         { key: 'actions', label: 'Actions' }
       ],
       ratings: [5, 4, 3, 2, 1],
@@ -189,7 +171,6 @@ export default {
       formMode: 'create',
       formData: {
         stand_id: '',
-        item_id: '',
         user_id: '',
         rating: 5,
         comment: ''
@@ -197,8 +178,7 @@ export default {
       statusMessage: '',
       statusTimeout: null,
       unsubscribeReviews: null,
-      unsubscribeStands: null,
-      unsubscribeMenu: null
+      unsubscribeStands: null
     };
   },
   computed: {
@@ -206,8 +186,8 @@ export default {
       return this.reviews.map(review => ({
         ...review,
         standName: this.getStandName(review.stand_id),
-        itemName: this.getItemName(review.item_id),
-        userName: this.getUserName(review.user_id)
+        userName: this.getUserName(review.user_id),
+        reviewed_at: review.reviewed_at || review.created_at || null
       }));
     },
     filteredReviews() {
@@ -219,33 +199,10 @@ export default {
         return ordered;
       }
       return ordered.filter(review => {
-        const haystack = `${review.userName} ${review.standName} ${review.itemName} ${review.comment}`.toLowerCase();
+        const haystack = `${review.userName} ${review.standName} ${review.comment}`.toLowerCase();
         return haystack.includes(query);
       });
     },
-    filteredItemsForStand() {
-      if (!this.formData.stand_id) {
-        return [];
-      }
-      return this.menuItems.filter(item => item.stand_id === Number(this.formData.stand_id));
-    }
-  },
-  watch: {
-    'formData.stand_id'(newValue) {
-      if (!newValue) {
-        this.formData.item_id = '';
-        return;
-      }
-      const availableItems = this.menuItems.filter(item => item.stand_id === Number(newValue));
-      if (availableItems.length === 0) {
-        this.formData.item_id = '';
-        return;
-      }
-      const hasSelected = availableItems.some(item => item.item_id === Number(this.formData.item_id));
-      if (!hasSelected) {
-        this.formData.item_id = availableItems[0].item_id;
-      }
-    }
   },
   created() {
     // subscribeToEntity automatically loads initial data, so we don't need to call refresh methods separately
@@ -266,12 +223,9 @@ export default {
     this.unsubscribeStands = subscribeToEntity('foodStands', async (data) => {
       this.foodStands = data;
     });
-    this.unsubscribeMenu = subscribeToEntity('menuItems', async (data) => {
-      this.menuItems = data;
-    });
   },
   beforeUnmount() {
-    [this.unsubscribeReviews, this.unsubscribeStands, this.unsubscribeMenu].forEach(unsub => {
+    [this.unsubscribeReviews, this.unsubscribeStands].forEach(unsub => {
       if (typeof unsub === 'function') {
         unsub();
       }
@@ -311,14 +265,6 @@ export default {
         this.foodStands = [];
       }
     },
-    async refreshMenuItems() {
-      try {
-        this.menuItems = await listEntities('menuItems');
-      } catch (error) {
-        console.error('Failed to load menu items', error);
-        this.menuItems = [];
-      }
-    },
     syncSelection() {
       if (!this.selectedReview) {
         return;
@@ -330,10 +276,6 @@ export default {
       const stand = this.foodStands.find(entry => entry.stand_id === Number(standId));
       return stand ? stand.name : `Stand #${standId}`;
     },
-    getItemName(itemId) {
-      const item = this.menuItems.find(entry => entry.item_id === Number(itemId));
-      return item ? item.name : `Item #${itemId}`;
-    },
     getUserName(userId) {
       const user = this.users.find(entry => entry.user_id === Number(userId));
       return user ? user.name : `User #${userId}`;
@@ -342,15 +284,10 @@ export default {
       this.formMode = 'create';
       this.formData = {
         stand_id: this.foodStands[0]?.stand_id || '',
-        item_id: '',
         user_id: this.users && this.users.length > 0 ? this.users[0].user_id : '',
         rating: 5,
         comment: ''
       };
-      const items = this.filteredItemsForStand;
-      if (items.length) {
-        this.formData.item_id = items[0].item_id;
-      }
       this.showForm = true;
     },
     selectReview(row) {
@@ -362,7 +299,6 @@ export default {
       this.formMode = 'edit';
       this.formData = {
         stand_id: review.stand_id,
-        item_id: review.item_id,
         user_id: review.user_id,
         rating: review.rating,
         comment: review.comment
@@ -375,7 +311,7 @@ export default {
       this.formMode = 'create';
     },
     validateForm() {
-      const required = ['stand_id', 'item_id', 'user_id', 'comment'];
+      const required = ['stand_id', 'user_id', 'comment'];
       const missing = required.some(field => !this.formData[field]);
       if (missing) {
         this.setStatusMessage('Please fill in all fields.');
@@ -390,7 +326,6 @@ export default {
     buildPayload() {
       return {
         stand_id: Number(this.formData.stand_id),
-        item_id: Number(this.formData.item_id),
         user_id: Number(this.formData.user_id),
         rating: Number(this.formData.rating),
         comment: this.formData.comment.trim()

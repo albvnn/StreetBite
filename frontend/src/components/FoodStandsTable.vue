@@ -212,7 +212,6 @@
 <script>
 import { formatDate } from '../utils/formatters';
 import {
-  listEntities,
   createEntity,
   updateEntity,
   deleteEntity,
@@ -393,19 +392,6 @@ export default {
     getCategoryImage(category) {
       return this.categoryImages[category] || '';
     },
-    async refreshFoodStands() {
-      try {
-        this.foodStands = await listEntities('foodStands');
-        if (!this.selectedStand && this.foodStands.length) {
-          this.selectedStand = this.foodStands[0];
-        } else {
-          this.syncSelection();
-        }
-      } catch (error) {
-        console.error('Failed to load food stands', error);
-        this.foodStands = [];
-      }
-    },
     syncSelection() {
       if (!this.selectedStand) {
         return;
@@ -583,44 +569,24 @@ export default {
           this.setStatusMessage(`"${updated.name}" updated successfully.`);
         }
         this.showForm = false;
-        await this.refreshFoodStands();
+        // Le subscribeToEntity mettra automatiquement à jour la liste
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
     async confirmDelete(stand) {
-      const confirmed = window.confirm(
-        `Delete "${stand.name}"? This will also affect its menu items and reviews later.`
-      );
-      if (!confirmed) {
-        return;
-      }
       try {
         await deleteEntity('foodStands', stand.stand_id);
-        await this.removeLinkedRecords(stand.stand_id);
+        // La base de données gère la suppression en cascade (ON DELETE CASCADE)
+        // Le subscribeToEntity mettra automatiquement à jour la liste
         if (this.selectedStand && this.selectedStand.stand_id === stand.stand_id) {
           this.selectedStand = null;
         }
         this.setStatusMessage(`"${stand.name}" deleted.`);
-        await this.refreshFoodStands();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the stand.');
-      }
-    },
-    async removeLinkedRecords(standId) {
-      try {
-        const menuItems = (await listEntities('menuItems')).filter(item => item.stand_id === standId);
-        for (const item of menuItems) {
-          await deleteEntity('menuItems', item.item_id);
-        }
-        const reviews = (await listEntities('reviews')).filter(review => review.stand_id === standId);
-        for (const review of reviews) {
-          await deleteEntity('reviews', review.review_id);
-        }
-      } catch (error) {
-        console.error('Error removing linked records', error);
       }
     },
     setStatusMessage(message) {

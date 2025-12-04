@@ -252,19 +252,6 @@ export default {
   methods: {
     formatDate,
     formatPrice,
-    async refreshMenuItems() {
-      try {
-        this.menuItems = await listEntities('menuItems');
-        if (!this.selectedItem && this.menuItems.length) {
-          this.selectedItem = this.menuItems[0];
-        } else {
-          this.syncSelection();
-        }
-      } catch (error) {
-        console.error('Failed to load menu items', error);
-        this.menuItems = [];
-      }
-    },
     async refreshFoodStands() {
       try {
         this.foodStands = await listEntities('foodStands');
@@ -357,38 +344,23 @@ export default {
           this.setStatusMessage(`"${updated.name}" updated successfully.`);
         }
         this.showForm = false;
-        await this.refreshMenuItems();
+        // Le subscribeToEntity mettra automatiquement à jour la liste
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
     async confirmDelete(item) {
-      const confirmed = window.confirm(`Delete "${item.name}" permanently?`);
-      if (!confirmed) {
-        return;
-      }
       try {
         await deleteEntity('menuItems', item.item_id);
-        await this.removeLinkedReviews(item.item_id);
+        // Le subscribeToEntity mettra automatiquement à jour la liste
         if (this.selectedItem && this.selectedItem.item_id === item.item_id) {
           this.selectedItem = null;
         }
         this.setStatusMessage(`"${item.name}" deleted.`);
-        await this.refreshMenuItems();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the menu item.');
-      }
-    },
-    async removeLinkedReviews(itemId) {
-      try {
-        const reviews = (await listEntities('reviews')).filter(review => review.item_id === itemId);
-        for (const review of reviews) {
-          await deleteEntity('reviews', review.review_id);
-        }
-      } catch (error) {
-        console.error('Error removing linked reviews', error);
       }
     },
     setStatusMessage(message) {

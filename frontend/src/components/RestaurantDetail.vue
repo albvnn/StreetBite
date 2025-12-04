@@ -323,7 +323,6 @@ export default {
     },
     async deleteMenuItem(item) {
       if (!this.canManage) return;
-      if (!confirm(`Delete "${item.name}"?`)) return;
       try {
         await deleteEntity('menuItems', item.item_id);
         this.setStatusMessage(`"${item.name}" deleted.`);

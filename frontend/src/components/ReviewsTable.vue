@@ -244,19 +244,6 @@ export default {
         this.users = [];
       }
     },
-    async refreshReviews() {
-      try {
-        this.reviews = await listEntities('reviews');
-        if (!this.selectedReview && this.reviews.length) {
-          this.selectedReview = this.reviews[0];
-        } else {
-          this.syncSelection();
-        }
-      } catch (error) {
-        console.error('Failed to load reviews', error);
-        this.reviews = [];
-      }
-    },
     async refreshFoodStands() {
       try {
         this.foodStands = await listEntities('foodStands');
@@ -347,24 +334,20 @@ export default {
           this.setStatusMessage('Review updated successfully.');
         }
         this.showForm = false;
-        await this.refreshReviews();
+        // Le subscribeToEntity mettra automatiquement à jour la liste
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Something went wrong. Please try again.');
       }
     },
     async confirmDelete(review) {
-      const confirmed = window.confirm('Delete this review permanently?');
-      if (!confirmed) {
-        return;
-      }
       try {
         await deleteEntity('reviews', review.review_id);
+        // Le subscribeToEntity mettra automatiquement à jour la liste
         if (this.selectedReview && this.selectedReview.review_id === review.review_id) {
           this.selectedReview = null;
         }
         this.setStatusMessage('Review deleted.');
-        await this.refreshReviews();
       } catch (error) {
         console.error(error);
         this.setStatusMessage('Failed to delete the review.');

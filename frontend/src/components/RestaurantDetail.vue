@@ -21,10 +21,11 @@
             <h2>Menu</h2>
             <button
               v-if="canManage"
-              class="primary-btn small"
+              class="add-item-btn"
               @click="showMenuForm = true"
             >
-              + Add Item
+              <span class="btn-icon">➕</span>
+              <span>Add Menu Item</span>
             </button>
           </div>
 
@@ -490,6 +491,43 @@ export default {
   font-size: 1.1em;
 }
 
+.add-item-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ff9800 0%, #ff6f00 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+}
+
+.add-item-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+  background: linear-gradient(135deg, #ff6f00 0%, #ff9800 100%);
+}
+
+.add-item-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.add-item-btn .btn-icon {
+  font-size: 1.2em;
+  transition: transform 0.3s ease;
+}
+
+.add-item-btn:hover .btn-icon {
+  transform: rotate(90deg) scale(1.1);
+}
+
 .publish-btn {
   display: inline-flex;
   align-items: center;
@@ -657,6 +695,22 @@ export default {
   gap: 12px;
 }
 
+.primary-btn {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover {
+  background-color: #f57c00;
+}
+
 .secondary-btn {
   background-color: #e0e0e0;
   color: #333;
@@ -666,6 +720,11 @@ export default {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.secondary-btn:hover {
+  background-color: #d0d0d0;
 }
 
 .link-btn {

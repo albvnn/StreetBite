@@ -64,22 +64,24 @@ CREATE TABLE Reviews (
   UNIQUE KEY uniq_user_stand (stand_id, user_id)  -- 1 review per user per stand
 ) ENGINE=InnoDB;
 
+-- Users de démo : tous les mots de passe sont "password123"
+-- Les hash bcrypt ont été générés avec 10 rounds de salt
 INSERT INTO Users (name,email,password_hash,role,phone,city) VALUES
-('Maya Lopez','maya@example.com','h1','owner','+33 600000001','Paris'),
-('Kenji Ito','kenji@example.com','h2','owner','+33 600000002','Lyon'),
-('Sofia Rossi','sofia@example.com','h3','owner','+33 600000003','Marseille'),
-('Omar Haddad','omar@example.com','h4','owner','+33 600000004','Toulouse'),
-('Nina Kovac','nina@example.com','h5','owner','+33 600000005','Bordeaux'),
-('Ava Martin','ava@example.com','h6','customer','+33 600000006','Paris'),
-('Liam Chen','liam@example.com','h7','customer','+33 600000007','Lyon'),
-('Zoe Dubois','zoe@example.com','h8','customer','+33 600000008','Lille'),
-('Hugo Morel','hugo@example.com','h9','customer','+33 600000009','Nantes'),
-('Lea Bernard','lea@example.com','h10','customer','+33 600000010','Nice'),
-('Ibrahim Diallo','ibra@example.com','h11','customer','+33 600000011','Grenoble'),
-('Clara Schmidt','clara@example.com','h12','customer','+33 600000012','Strasbourg'),
-('Pablo Garcia','pablo@example.com','h13','customer','+33 600000013','Montpellier'),
-('Yuki Tanaka','yuki@example.com','h14','customer','+33 600000014','Rennes'),
-('Ana Silva','ana@example.com','h15','customer','+33 600000015','Paris');
+('Maya Lopez','maya@example.com','$2b$10$6HoJVR2Pu/ULiBvdKAB1vOZ7MkWGTfCshEXJL.A5fQi8T3GABTkXi','owner','+33 600000001','Paris'),
+('Kenji Ito','kenji@example.com','$2b$10$ZPyAtTVL8YLxEvdWO.BsROl31VYdJGpqH3oTbdbqVSxlaHB6WCnOS','owner','+33 600000002','Lyon'),
+('Sofia Rossi','sofia@example.com','$2b$10$uvmOu30WLWgdSvaJLvpZueTAO3NyBGnH0jKQRmhRczbqoFDsjZ3JK','owner','+33 600000003','Marseille'),
+('Omar Haddad','omar@example.com','$2b$10$AcjtyPuuzbYXGmnswfj10u7Q.t7UGQYXVcJrInjaiMgB/Qodg1ksm','owner','+33 600000004','Toulouse'),
+('Nina Kovac','nina@example.com','$2b$10$RkuewW1270YuA824NylcL.a.d.xn1T/RaXoX1QaFs1eHHR8cR94OO','owner','+33 600000005','Bordeaux'),
+('Ava Martin','ava@example.com','$2b$10$gKHGRrG3KkxiVsucC3cOVuNGaTFoUXwxSVR/U.zYinUka8Hi34dg2','customer','+33 600000006','Paris'),
+('Liam Chen','liam@example.com','$2b$10$W55BN84GK9BmVlB0kzhyYuLOgnlCGGuKx8d0QI0zmoPvOXRVormkm','customer','+33 600000007','Lyon'),
+('Zoe Dubois','zoe@example.com','$2b$10$ssvv/vPULLfOy8IoNbarzOTNdnX.44atQskBpgMI05fKtyUyEmm7O','customer','+33 600000008','Lille'),
+('Hugo Morel','hugo@example.com','$2b$10$PDVqb2rpzlVGfQfw7CU6gu2Cq8/WlMuVmsnHdy.HO3u4MMw8LpH7O','customer','+33 600000009','Nantes'),
+('Lea Bernard','lea@example.com','$2b$10$c6mBeN1J.EgpH7WFNevoCOUGsKomfmCNMPVdbdytynIv14SDAa6c2','customer','+33 600000010','Nice'),
+('Ibrahim Diallo','ibra@example.com','$2b$10$d3IHA78QPwUxNEszbEm7Y.3BFJfUopbPU8RHCkU5.Fwxh7reRrRuy','customer','+33 600000011','Grenoble'),
+('Clara Schmidt','clara@example.com','$2b$10$sqWGUNFGaWmBuxOLDvNGx.4D/RFFdHcwUeJuL4Zxf3edY8GB3GP1.','customer','+33 600000012','Strasbourg'),
+('Pablo Garcia','pablo@example.com','$2b$10$iBDFHuxdKmNIOY5jBBNGSOKrBohGzs.d8KZZ/gPwDdr0ZbqmMUiYm','customer','+33 600000013','Montpellier'),
+('Yuki Tanaka','yuki@example.com','$2b$10$cjos9o0d2HzvugCrKQmh6e20cY96XAFuaZ6mgwjrMDNG6m.5ILpEi','customer','+33 600000014','Rennes'),
+('Ana Silva','ana@example.com','$2b$10$Ioux7NwmwKOwlzOmtrAip.zpG4nKb6p3i22ovhdaOrgNQEM9IrXDy','customer','+33 600000015','Paris');
 
 
 INSERT INTO FoodStands (name,location,category,owner_id,opening_hours,is_active) VALUES

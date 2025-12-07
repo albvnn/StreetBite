@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { hasAdminAccess, revokeAdminAccess } from '../utils/adminAccess';
+import { isAuthenticated } from '../utils/authService';
 
 import HomePage from '../components/HomePage.vue';
 import RestaurantDetail from '../components/RestaurantDetail.vue';
@@ -79,6 +80,7 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  // Protection des routes admin
   if (to.path === '/admin/gate') {
     revokeAdminAccess();
     next();
@@ -88,7 +90,18 @@ router.beforeEach((to, from, next) => {
     } else {
       next('/admin/gate');
     }
-  } else {
+  } 
+  // Protection des détails de restaurant (nécessite authentification)
+  else if (to.path.startsWith('/restaurant/')) {
+    if (isAuthenticated()) {
+      next();
+    } else {
+      // Rediriger vers la page d'accueil avec un flag pour ouvrir le modal de login
+      next({ path: '/', query: { login: 'true' } });
+    }
+  } 
+  // La page d'accueil est accessible mais le modal de login s'ouvrira si login=true
+  else {
     next();
   }
 });

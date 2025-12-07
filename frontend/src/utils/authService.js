@@ -1,5 +1,3 @@
-import { usersApi } from './apiService';
-
 const STORAGE_KEY = 'streetbite_current_user';
 const ADMIN_CODE = '1234';
 
@@ -10,28 +8,67 @@ function getStorage() {
   return window.localStorage;
 }
 
-export async function loginByEmail(email) {
+// Fonction pour l'inscription
+export async function register(userData) {
   try {
-    const normalizedEmail = email.trim().toLowerCase();
-    const user = await usersApi.getByEmail(normalizedEmail);
-    
-    if (!user) {
-      return { success: false, error: 'Email not found' };
+    const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000/api'}/users/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(userData)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: data.message || 'Registration failed' };
     }
 
     const storage = getStorage();
     if (storage) {
-      // Ne pas stocker le password_hash
-      // eslint-disable-next-line no-unused-vars
-      const { password_hash, ...userWithoutPassword } = user;
-      storage.setItem(STORAGE_KEY, JSON.stringify(userWithoutPassword));
+      storage.setItem(STORAGE_KEY, JSON.stringify(data));
     }
 
-    return { success: true, user };
+    return { success: true, user: data };
+  } catch (error) {
+    console.error('Registration error:', error);
+    return { success: false, error: 'Failed to register. Please try again.' };
+  }
+}
+
+// Fonction pour la connexion avec mot de passe
+export async function loginWithPassword(email, password) {
+  try {
+    const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000/api'}/users/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      return { success: false, error: data.message || 'Invalid email or password' };
+    }
+
+    const storage = getStorage();
+    if (storage) {
+      storage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    return { success: true, user: data };
   } catch (error) {
     console.error('Login error:', error);
     return { success: false, error: 'Failed to login. Please try again.' };
   }
+}
+
+// Ancienne fonction de login (conservée pour compatibilité mais dépréciée)
+export async function loginByEmail(email) {
+  return loginWithPassword(email, '');
 }
 
 export function logout() {
@@ -108,8 +145,16 @@ function notifyAuthChange() {
   });
 }
 
-export async function login(email) {
-  const result = await loginByEmail(email);
+export async function login(email, password) {
+  const result = await loginWithPassword(email, password);
+  if (result.success) {
+    notifyAuthChange();
+  }
+  return result;
+}
+
+export async function registerAndNotify(userData) {
+  const result = await register(userData);
   if (result.success) {
     notifyAuthChange();
   }

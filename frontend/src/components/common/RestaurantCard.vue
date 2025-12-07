@@ -7,7 +7,10 @@
         class="restaurant-image"
       />
       <div class="restaurant-content">
-        <h2 class="restaurant-name">{{ restaurant.name }}</h2>
+        <div class="restaurant-header">
+          <h2 class="restaurant-name">{{ restaurant.name }}</h2>
+          <span v-if="isOwner" class="owner-badge">👑 Owner</span>
+        </div>
         <p class="restaurant-description">
           {{ restaurant.description }}
         </p>
@@ -42,6 +45,7 @@
 import StatusBadge from './StatusBadge.vue';
 import StarRating from './StarRating.vue';
 import { isStandOpenNow } from '../../utils/openingHours';
+import { getCurrentUser } from '../../utils/authService';
 
 export default {
   name: 'RestaurantCard',
@@ -56,6 +60,15 @@ export default {
     }
   },
   computed: {
+    currentUser() {
+      return getCurrentUser();
+    },
+    isOwner() {
+      if (!this.currentUser || !this.restaurant) {
+        return false;
+      }
+      return this.currentUser.user_id === this.restaurant.owner_id;
+    },
     isCurrentlyOpen() {
       if (!this.restaurant) {
         return false;
@@ -102,12 +115,37 @@ export default {
   flex-direction: column;
 }
 
+.restaurant-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
 .restaurant-name {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.5em;
   font-weight: 700;
   color: #333;
-  margin: 0 0 12px 0;
+  margin: 0;
+  flex: 1;
+}
+
+.owner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background-color: #fff3e0;
+  color: #e65100;
+  border: 1px solid #ff9800;
+  border-radius: 12px;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.75em;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .restaurant-description {

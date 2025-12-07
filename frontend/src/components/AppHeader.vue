@@ -14,9 +14,9 @@
         👤 {{ currentUser.name }}
         <span class="user-role">({{ currentUser.role === 'owner' ? 'Owner' : 'Customer' }})</span>
       </button>
-      <button v-else class="nav-button" @click="showLogin = true">
+      <router-link v-else to="/login" class="nav-button">
         Login
-      </button>
+      </router-link>
       <button class="nav-button admin-btn" @click="openAdmin">
         🔧 Admin
       </button>
@@ -24,27 +24,17 @@
     <div v-if="showUserMenu" class="user-menu">
       <button class="user-menu-item" @click="handleLogout">Logout</button>
     </div>
-    <LoginModal 
-      :show="showLogin" 
-      @close="handleCloseLogin" 
-      @success="handleLoginSuccess" 
-    />
   </header>
 </template>
 
 <script>
 import { getCurrentUser, logoutAndNotify, subscribeToAuth } from '../utils/authService';
-import LoginModal from './LoginModal.vue';
 
 export default {
   name: 'AppHeader',
-  components: {
-    LoginModal
-  },
   data() {
     return {
       currentUser: null,
-      showLogin: false,
       showUserMenu: false,
       unsubscribeAuth: null
     };
@@ -55,17 +45,6 @@ export default {
       this.currentUser = user;
       this.showUserMenu = false;
     });
-    // Ouvrir le modal de login si le query param login=true est présent
-    if (this.$route.query.login === 'true' && !this.currentUser) {
-      this.showLogin = true;
-    }
-  },
-  watch: {
-    '$route.query.login'(newVal) {
-      if (newVal === 'true' && !this.currentUser) {
-        this.showLogin = true;
-      }
-    }
   },
   beforeUnmount() {
     if (this.unsubscribeAuth) {
@@ -73,28 +52,11 @@ export default {
     }
   },
   methods: {
-    handleLoginSuccess(user) {
-      this.currentUser = user;
-      this.showLogin = false;
-      // Retirer le query param login de l'URL après connexion réussie
-      if (this.$route.query.login) {
-        this.$router.replace({ query: {} });
-      }
-    },
-    handleCloseLogin() {
-      this.showLogin = false;
-      // Retirer le query param login de l'URL si l'utilisateur ferme le modal sans se connecter
-      if (this.$route.query.login) {
-        this.$router.replace({ query: {} });
-      }
-    },
     handleLogout() {
       logoutAndNotify();
       this.showUserMenu = false;
-      // Rediriger vers la page d'accueil avec le modal de login si on est sur une route protégée
-      if (this.$route.path.startsWith('/admin') || this.$route.path.startsWith('/restaurant') || this.$route.path === '/') {
-        this.$router.push({ path: '/', query: { login: 'true' } });
-      }
+      // Rediriger vers la page de login après déconnexion
+      this.$router.push('/login');
     },
     openAdmin() {
       this.$router.push('/admin/gate');

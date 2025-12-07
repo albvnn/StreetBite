@@ -4,6 +4,8 @@ import { isAuthenticated } from '../utils/authService';
 
 import HomePage from '../components/HomePage.vue';
 import RestaurantDetail from '../components/RestaurantDetail.vue';
+import LoginPage from '../components/LoginPage.vue';
+import RegisterPage from '../components/RegisterPage.vue';
 import AdminGate from '../components/AdminGate.vue';
 import AdminPanel from '../components/AdminPanel.vue';
 import UsersTable from '../components/UsersTable.vue';
@@ -12,6 +14,18 @@ import MenuItemsTable from '../components/MenuItemsTable.vue';
 import ReviewsTable from '../components/ReviewsTable.vue';
 
 const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: LoginPage,
+    meta: { title: 'Login', public: true }
+  },
+  {
+    path: '/register',
+    name: 'register',
+    component: RegisterPage,
+    meta: { title: 'Register', public: true }
+  },
   {
     path: '/',
     name: 'home',
@@ -80,6 +94,16 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  // Routes publiques (login et register) - si déjà connecté, rediriger vers home
+  if (to.meta.public) {
+    if (isAuthenticated()) {
+      next('/');
+    } else {
+      next();
+    }
+    return;
+  }
+
   // Protection des routes admin
   if (to.path === '/admin/gate') {
     revokeAdminAccess();
@@ -91,18 +115,14 @@ router.beforeEach((to, from, next) => {
       next('/admin/gate');
     }
   } 
-  // Protection des détails de restaurant (nécessite authentification)
-  else if (to.path.startsWith('/restaurant/')) {
+  // Protection de toutes les autres routes (y compris home et restaurant detail)
+  else {
     if (isAuthenticated()) {
       next();
     } else {
-      // Rediriger vers la page d'accueil avec un flag pour ouvrir le modal de login
-      next({ path: '/', query: { login: 'true' } });
+      // Rediriger vers la page de login avec le paramètre redirect pour revenir après connexion
+      next({ path: '/login', query: { redirect: to.fullPath } });
     }
-  } 
-  // La page d'accueil est accessible mais le modal de login s'ouvrira si login=true
-  else {
-    next();
   }
 });
 

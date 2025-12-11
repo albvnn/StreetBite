@@ -4,7 +4,6 @@ StreetBite is a web platform that helps users discover, review, and rate street 
 
 * **Customers**: register, browse stands, check menus, and leave reviews with ratings.
 * **Owners**: manage their food stands and menu items.
-* **Statistics**: average ratings per stand, and top 3 most popular categories.
 
 ---
 
@@ -14,10 +13,6 @@ StreetBite is a web platform that helps users discover, review, and rate street 
 * **Food Stands**: created and managed by owners (name, category, location, opening hours).
 * **Menus**: each stand has menu items (name, description, price, availability).
 * **Reviews**: customers can leave reviews (rating, comment, likes).
-* **Statistics (non-CRUD)**:
-
-  * Calculate the **average rating per stand**
-  * Display the **Top 3 categories** by popularity
 
 ---
 
@@ -43,7 +38,10 @@ StreetBite is a web platform that helps users discover, review, and rate street 
 
 ```text
 backend/
+  controllers/
+  utils/
   main.sql
+  ...
 frontend/
   src/
   public/
@@ -51,8 +49,7 @@ frontend/
   vue.config.js
 docs/
   README.md
-  diagrams/
-  planning/
+  StreetBite.pdf
 ```
 
 ---
@@ -64,17 +61,25 @@ docs/
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run serve
 ```
 
 ### Backend (Express)
 
 ```bash
 cd backend
-npm init -y
-npm install express mysql2
-node index.js
+npm install
+node server.js
 ```
+
+Update the .env file with this example : 
+
+DB_HOST=
+DB_PORT=
+DB_USER=
+DB_PASSWORD=
+DB_NAME=StreetFoodDB
+PORT=3000
 
 ### Database
 
@@ -90,4 +95,4 @@ into MySQL.
 
 ## License
 
-Academic project – EFREI ING1 Project.
+Academic project – EFREI ING1 Project - Alban PASCAL, Mathieu DUBUST, Odysseas FAVEAUX-KARAKOSTA.

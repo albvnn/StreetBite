@@ -82,7 +82,57 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ message: 'Internal server error' });
 });
 
-app.listen(PORT, () => {
+// Gestionnaire d'erreur pour le serveur
+const server = app.listen(PORT, () => {
   console.log(`StreetBite backend listening on port ${PORT}`);
+});
+
+// Gestion des erreurs du serveur
+server.on('error', (error) => {
+  if (error.syscall !== 'listen') {
+    throw error;
+  }
+  
+  const bind = typeof PORT === 'string' ? `Pipe ${PORT}` : `Port ${PORT}`;
+  
+  switch (error.code) {
+    case 'EACCES':
+      console.error(`${bind} requires elevated privileges`);
+      process.exit(1);
+      break;
+    case 'EADDRINUSE':
+      console.error(`${bind} is already in use`);
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+});
+
+// Gestion des erreurs non capturées
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  // Ne pas arrêter le serveur immédiatement, laisser une chance de se récupérer
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Ne pas arrêter le serveur immédiatement
+});
+
+// Gestion de l'arrêt propre
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
 });
 
